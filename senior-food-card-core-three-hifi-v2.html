@@ -4871,19 +4871,13 @@
 
     document.querySelectorAll(".detail-home-btn").forEach((button) => {
       button.addEventListener("click", () => {
-        resetToHome();
+        enterWaimaiHome();
       });
     });
 
     document.querySelectorAll(".hangup-btn").forEach((button) => {
       button.addEventListener("click", () => {
-        if (window.history.length > 1) {
-          window.history.back();
-          return;
-        }
-        document.querySelectorAll(".hangup-btn").forEach((node) => {
-          node.textContent = "已挂断";
-        });
+        enterWaimaiHome();
       });
     });
 
