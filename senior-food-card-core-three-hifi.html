@@ -43,6 +43,10 @@
       gap: 8px;
     }
 
+    .single-flow .version-controls {
+      display: none;
+    }
+
     .version-row {
       display: grid;
       grid-template-columns: 78px 1fr;
@@ -3207,7 +3211,7 @@
   </style>
 </head>
 <body>
-  <main class="board mode-call direction-horizontal">
+  <main class="board mode-call direction-vertical single-flow">
     <div class="version-controls" aria-label="版本管理">
       <div class="version-row">
         <div class="version-label">页面入口</div>
@@ -3847,10 +3851,13 @@
     let isGuessMode = false;
     let activeItems = recommendationGroups[0];
     let activeStandardItem = null;
-    let activeSeniorScheme = "scheme-1";
+    let activeSeniorScheme = "scheme-3";
     let currentOrderItem = null;
     let programmaticScrollTimer = null;
     let observedHeroIndex = 0;
+    let speechEnabled = false;
+    let speechMuted = false;
+    let lastSpokenText = "";
 
     const addressOptions = [
       {
@@ -3934,6 +3941,37 @@
       }[char]));
     }
 
+    function speakText(text) {
+      lastSpokenText = text;
+      if (!speechEnabled || speechMuted || !("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "zh-CN";
+      utterance.rate = 0.92;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function setMuted(nextMuted) {
+      speechMuted = nextMuted;
+      document.querySelectorAll(".mute-btn").forEach((button) => {
+        button.classList.toggle("is-muted", speechMuted);
+        button.textContent = speechMuted ? "已静音" : "静音";
+      });
+      if (speechMuted) {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        return;
+      }
+      if (lastSpokenText) speakText(lastSpokenText);
+    }
+
+    function speakForTalk(talk, text) {
+      const concept = talk.closest(".concept");
+      if (concept && getComputedStyle(concept).display === "none") return;
+      speakText(text);
+    }
+
     function typeTalk(talk, text, options = {}) {
       if (talk.typeTimer) {
         clearTimeout(talk.typeTimer);
@@ -3952,6 +3990,7 @@
       talk.classList.remove("done");
       target.textContent = "";
       talk.scrollTop = 0;
+      speakForTalk(talk, text);
 
       if (immediate) {
         target.textContent = text;
@@ -3987,6 +4026,7 @@
         <div class="talk-message user">${escapeHtml(userText)}</div>
         <div class="talk-message ai"><span class="talk-text"></span></div>
       `;
+      speakForTalk(talk, aiText);
 
       const target = talk.querySelector(".talk-text");
 
@@ -4354,6 +4394,8 @@
     }
 
     function enterWaimaiHome() {
+      speechEnabled = false;
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       syncPageEntry("waimai");
       document.querySelectorAll(".screen").forEach((screen) => {
         screen.classList.remove("is-ordering", "is-guess", "is-assist-pay", "is-pay-card", "is-detail", "is-senior-home", "is-sheet-open");
@@ -4387,6 +4429,8 @@
     }
 
     function enterSeniorHome(scheme = activeSeniorScheme) {
+      speechEnabled = false;
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
       activeSeniorScheme = scheme;
       syncSeniorSchemeButtons();
       syncPageEntry("waimai");
@@ -4642,6 +4686,7 @@
     }
 
     function resetToHome() {
+      speechEnabled = true;
       syncPageEntry("voice");
       activeGroupIndex = 0;
       shuffleClickCount = 0;
@@ -4737,8 +4782,7 @@
 
     document.querySelectorAll(".mute-btn").forEach((button) => {
       button.addEventListener("click", () => {
-        button.classList.toggle("is-muted");
-        button.textContent = button.classList.contains("is-muted") ? "已静音" : "静音";
+        setMuted(!speechMuted);
       });
     });
 
@@ -4746,7 +4790,7 @@
       screen.addEventListener("click", (event) => {
         const useVoiceOrder = event.target.closest(".wm-use-btn");
         if (useVoiceOrder && screen.contains(useVoiceOrder)) {
-          enterSeniorHome(activeSeniorScheme);
+          enterSeniorHome("scheme-3");
           return;
         }
 
@@ -4889,6 +4933,7 @@
 
     renderGroup();
     bindHeroScrollSync();
+    enterWaimaiHome();
     window.enterWaimaiHome = enterWaimaiHome;
     window.enterSeniorHome = enterSeniorHome;
   </script>
