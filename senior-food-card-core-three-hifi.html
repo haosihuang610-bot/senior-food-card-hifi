@@ -1,0 +1,4941 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>语音点餐卡片核心两版</title>
+  <!-- Capture: focused iteration for the senior Waimai food-choice card core area. Keep only three card variants and apply current feedback: 16px page padding, rank badge on image/card top, no duplicate ETA, discount savings, next-card peek for horizontal mode, larger image/type, and full-width decision aids. -->
+  <style>
+    :root {
+      --brand-yellow: #ffdd00;
+      --price-red: #ff2d19;
+      --save-red: #ff4d19;
+      --page-bg: #edf3ee;
+      --paper: #fffdf6;
+      --card: #ffffff;
+      --ink: #16181d;
+      --sub: #686d70;
+      --muted: #8e928d;
+      --sage: #5f8b6c;
+      --sage-bg: #eef8ef;
+      --warm: #fff6df;
+      --line: #f0eee7;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #e7ece9;
+      color: var(--ink);
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    .board {
+      width: 443px;
+      padding: 34px 34px 40px;
+    }
+
+    .version-controls {
+      width: 375px;
+      margin: 0 0 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .single-flow .version-controls {
+      display: none;
+    }
+
+    .version-row {
+      display: grid;
+      grid-template-columns: 78px 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .version-label {
+      color: #5f6568;
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .version-switch {
+      height: 40px;
+      padding: 4px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(20,23,28,.08);
+      box-shadow: 0 10px 24px rgba(21,25,32,.08);
+      backdrop-filter: blur(18px);
+    }
+
+    .version-switch button {
+      border: 0;
+      border-radius: 18px;
+      background: transparent;
+      color: #6d7176;
+      font-family: inherit;
+      font-size: 15px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .version-switch button.active {
+      background: var(--brand-yellow);
+      color: #111;
+      box-shadow: 0 6px 14px rgba(255,221,0,.24);
+    }
+
+    .scheme-switch {
+      grid-template-columns: repeat(5, 1fr);
+    }
+
+    .scheme-switch button {
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 375px;
+      gap: 0;
+      align-items: start;
+    }
+
+    .board.direction-horizontal .concept[data-view-direction="vertical"],
+    .board.direction-vertical .concept[data-view-direction="horizontal"] {
+      display: none;
+    }
+
+    .concept {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .phone {
+      width: 375px;
+      height: 812px;
+      padding: 8px;
+      border-radius: 40px;
+      background: #17202b;
+      box-shadow: 0 24px 54px rgba(21, 25, 32, .22);
+    }
+
+    .screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 32px;
+      background-color: var(--page-bg);
+      background-image:
+        linear-gradient(90deg, rgba(95,139,108,.055) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(95,139,108,.045) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+
+    .status {
+      height: 44px;
+      padding: 12px 20px 0 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #111;
+      font-size: 17px;
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #303235;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .signal {
+      height: 15px;
+      display: grid;
+      grid-template-columns: repeat(4, 3px);
+      align-items: end;
+      gap: 2px;
+    }
+
+    .signal i {
+      display: block;
+      border-radius: 2px;
+      background: #1c1d20;
+    }
+
+    .signal i:nth-child(1) { height: 5px; }
+    .signal i:nth-child(2) { height: 8px; }
+    .signal i:nth-child(3) { height: 11px; }
+    .signal i:nth-child(4) { height: 15px; }
+
+    .battery {
+      width: 25px;
+      height: 12px;
+      border: 2px solid #777;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .battery::before {
+      content: "";
+      position: absolute;
+      inset: 2px 6px 2px 2px;
+      border-radius: 2px;
+      background: #777;
+    }
+
+    .battery::after {
+      content: "";
+      position: absolute;
+      right: -5px;
+      top: 3px;
+      width: 3px;
+      height: 4px;
+      border-radius: 1px;
+      background: #888;
+    }
+
+    .top {
+      padding: 8px 16px 0;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 40px;
+      gap: 10px;
+    }
+
+    .nav-title {
+      min-width: 0;
+      font-size: 22px;
+      line-height: 1.15;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mute-btn {
+      flex: 0 0 auto;
+      height: 40px;
+      min-width: 108px;
+      padding: 0 14px;
+      border: 2px solid rgba(17,24,39,.10);
+      border-radius: 20px;
+      background: #ffffff;
+      color: #1d2329;
+      box-shadow: 0 8px 20px rgba(31, 38, 34, .10);
+      font-family: inherit;
+      font-size: 17px;
+      line-height: 1;
+      font-weight: 950;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+
+    .mute-btn:focus {
+      outline: none;
+    }
+
+    .mute-btn::before {
+      content: "";
+      width: 18px;
+      height: 18px;
+      display: block;
+      background: currentColor;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 5 6.8 8.2H4a1 1 0 0 0-1 1v5.6a1 1 0 0 0 1 1h2.8L11 19a1 1 0 0 0 1.6-.8V5.8A1 1 0 0 0 11 5Zm6.7 5.3a1 1 0 0 0-1.4 1.4L18.6 14l-2.3 2.3a1 1 0 1 0 1.4 1.4l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4-1.4L21.4 14l2.3-2.3a1 1 0 0 0-1.4-1.4L20 12.6l-2.3-2.3Z'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 5 6.8 8.2H4a1 1 0 0 0-1 1v5.6a1 1 0 0 0 1 1h2.8L11 19a1 1 0 0 0 1.6-.8V5.8A1 1 0 0 0 11 5Zm6.7 5.3a1 1 0 0 0-1.4 1.4L18.6 14l-2.3 2.3a1 1 0 1 0 1.4 1.4l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4-1.4L21.4 14l2.3-2.3a1 1 0 0 0-1.4-1.4L20 12.6l-2.3-2.3Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+
+    .mute-btn.is-muted {
+      background: #e94736;
+      border-color: #e94736;
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(233,71,54,.28);
+    }
+
+    .body {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 86px;
+      bottom: 148px;
+      height: auto;
+      padding: 8px 16px 0;
+      overflow: hidden;
+    }
+
+    .body.single {
+      padding-bottom: 0;
+    }
+
+    .screen.is-ordering .body {
+      bottom: 166px;
+    }
+
+    .screen.is-detail {
+      background: #f5f5f5;
+      background-image: none;
+    }
+
+    .screen.is-waimai-home {
+      background: #f5f5f5;
+      background-image: none;
+    }
+
+    .screen.is-senior-home {
+      background: #f5f5f5;
+      background-image: none;
+    }
+
+    .screen.is-waimai-home .status,
+    .screen.is-waimai-home .top,
+    .screen.is-waimai-home .body,
+    .screen.is-waimai-home .recommendation-actions,
+    .screen.is-waimai-home .order-actions,
+    .screen.is-waimai-home .detail-actions {
+      display: none;
+    }
+
+    .screen.is-senior-home .status,
+    .screen.is-senior-home .top,
+    .screen.is-senior-home .body,
+    .screen.is-senior-home .recommendation-actions,
+    .screen.is-senior-home .order-actions,
+    .screen.is-senior-home .detail-actions {
+      display: none;
+    }
+
+    .screen.is-detail .top,
+    .screen.is-detail .body,
+    .screen.is-detail .recommendation-actions,
+    .screen.is-detail .order-actions {
+      display: none;
+    }
+
+    .recommendation-view,
+    .order-view {
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .order-view,
+    .screen.is-ordering .recommendation-view,
+    .screen.is-ordering .recommendation-actions {
+      display: none;
+    }
+
+    .screen.is-ordering .order-view,
+    .screen.is-ordering .order-actions {
+      display: block;
+    }
+
+    .detail-view {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 44px;
+      bottom: 74px;
+      overflow-y: auto;
+      padding: 0 10px 16px;
+      color: #202124;
+      background: #f5f5f5;
+      scrollbar-width: none;
+    }
+
+    .detail-view::-webkit-scrollbar {
+      display: none;
+    }
+
+    .screen.is-detail .detail-view {
+      display: block;
+    }
+
+    .detail-toolbar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 18px;
+      padding: 0 8px;
+      color: #111;
+    }
+
+    .detail-tool {
+      width: 25px;
+      height: 25px;
+      display: block;
+      background: currentColor;
+    }
+
+    .detail-tool.support {
+      -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 4.2c-5.1 0-9.2 4.1-9.2 9.2v4.3c0 1.6 1.3 2.9 2.9 2.9h1.1v-7H6.9v-.2c0-3.9 3.2-7.1 7.1-7.1s7.1 3.2 7.1 7.1v.2h-1.9v7h1.1c1.3 0 2.4-.9 2.8-2.1-.6 3.1-3.4 5.4-6.7 5.4h-2.1v-2.3h2.1c2.2 0 4.1-1.8 4.1-4.1v-4.1c0-5.1-4.1-9.2-9.2-9.2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M14 4.2c-5.1 0-9.2 4.1-9.2 9.2v4.3c0 1.6 1.3 2.9 2.9 2.9h1.1v-7H6.9v-.2c0-3.9 3.2-7.1 7.1-7.1s7.1 3.2 7.1 7.1v.2h-1.9v7h1.1c1.3 0 2.4-.9 2.8-2.1-.6 3.1-3.4 5.4-6.7 5.4h-2.1v-2.3h2.1c2.2 0 4.1-1.8 4.1-4.1v-4.1c0-5.1-4.1-9.2-9.2-9.2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+
+    .detail-tool.refresh {
+      -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M23 7.2V3h2.6v8.8h-8.8V9.2h4.3A8.1 8.1 0 1 0 22 16h2.7A10.8 10.8 0 1 1 23 7.2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 28 28' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M23 7.2V3h2.6v8.8h-8.8V9.2h4.3A8.1 8.1 0 1 0 22 16h2.7A10.8 10.8 0 1 1 23 7.2Z'/%3E%3C/svg%3E") center / contain no-repeat;
+    }
+
+    .detail-eta {
+      padding: 2px 8px 0;
+    }
+
+    .detail-time {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      color: #202124;
+    }
+
+    .detail-time strong {
+      font-size: 47px;
+      line-height: .95;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .detail-time span {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .detail-status-title {
+      margin-top: 16px;
+      font-size: 23px;
+      line-height: 1.1;
+      font-weight: 950;
+    }
+
+    .detail-progress {
+      height: 44px;
+      margin: 16px 12px 14px;
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: center;
+    }
+
+    .detail-progress::before,
+    .detail-progress::after {
+      content: "";
+      position: absolute;
+      left: 22px;
+      right: 22px;
+      top: 21px;
+      height: 7px;
+      border-radius: 6px;
+      background: #e8e8e8;
+    }
+
+    .detail-progress::after {
+      right: 174px;
+      background: #f7dd42;
+    }
+
+    .progress-dot {
+      position: relative;
+      z-index: 1;
+      width: 34px;
+      height: 34px;
+      margin: 0 auto;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #111;
+      background: #efefef;
+      font-size: 17px;
+      font-weight: 950;
+    }
+
+    .progress-dot.active {
+      background: #ffdf35;
+    }
+
+    .detail-map {
+      position: relative;
+      height: 214px;
+      margin: 0 4px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: url("assets/detail-map-panel.png") center / cover no-repeat;
+    }
+
+    .detail-map::before,
+    .detail-map::after,
+    .detail-map > * {
+      display: none;
+    }
+
+    .map-badge {
+      position: absolute;
+      right: 6px;
+      top: 8px;
+      padding: 3px 7px;
+      border-radius: 7px;
+      background: rgba(255,255,255,.86);
+      color: #f28c2d;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .merchant-pin {
+      position: absolute;
+      left: 126px;
+      top: 64px;
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      border: 4px solid #101418;
+      box-shadow: 0 4px 12px rgba(0,0,0,.26);
+      overflow: hidden;
+      background: #70b354;
+    }
+
+    .merchant-pin img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .map-bubble {
+      position: absolute;
+      left: 104px;
+      top: 146px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      background: #fff;
+      color: #3a3a3a;
+      font-size: 18px;
+      font-weight: 950;
+      box-shadow: 0 4px 14px rgba(0,0,0,.10);
+    }
+
+    .map-bubble::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -8px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      transform: translateX(-50%) rotate(45deg);
+    }
+
+    .food-pin {
+      position: absolute;
+      left: 166px;
+      bottom: 32px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 42%, #fff 0 31%, #ffb33d 32% 100%);
+      box-shadow: 0 4px 12px rgba(0,0,0,.16);
+    }
+
+    .safety-strip {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 8px;
+      height: 34px;
+      border-radius: 17px;
+      background: rgba(255,255,255,.92);
+      color: #f0872d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .detail-action-pills {
+      height: 62px;
+      display: grid;
+      grid-template-columns: 35px 1fr 1fr .92fr 1.08fr;
+      gap: 5px;
+      align-items: center;
+      padding: 0 4px;
+      background: #fff;
+    }
+
+    .detail-more {
+      color: #8a8d91;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .detail-pill {
+      height: 38px;
+      border-radius: 19px;
+      border: 1px solid #e5e5e5;
+      background: #fff;
+      color: #25272a;
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 900;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .detail-pill.contact {
+      position: relative;
+      border-color: #ff8a2a;
+      color: #f07e22;
+    }
+
+    .detail-pill.contact::after {
+      content: "1";
+      position: absolute;
+      right: -3px;
+      top: -8px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ef4a3b;
+      color: #fff;
+      font-size: 12px;
+      line-height: 18px;
+      text-align: center;
+    }
+
+    .detail-tip {
+      height: 42px;
+      margin: 0 -10px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #aaa;
+      background: #fafafa;
+      font-size: 14px;
+      font-weight: 780;
+    }
+
+    .detail-section {
+      margin-top: 9px;
+      padding: 17px 16px 16px;
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 18px;
+      font-size: 21px;
+      line-height: 1.1;
+      font-weight: 950;
+    }
+
+    .detail-info-row {
+      display: grid;
+      grid-template-columns: 76px 1fr 50px;
+      gap: 8px;
+      color: #777b80;
+      font-size: 16px;
+      line-height: 1.42;
+      font-weight: 780;
+    }
+
+    .detail-info-row strong {
+      color: #5b6066;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .detail-change-btn {
+      height: 28px;
+      border-radius: 14px;
+      border: 1px solid #e6e6e6;
+      background: #fff;
+      color: #85888b;
+      font-size: 14px;
+      font-weight: 850;
+      font-family: inherit;
+    }
+
+    .detail-fold {
+      margin-top: 20px;
+      text-align: center;
+      color: #9b9da0;
+      font-size: 15px;
+      font-weight: 780;
+    }
+
+    .fee-store-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #6f7378;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .fan-link {
+      color: #f0842d;
+      font-weight: 900;
+    }
+
+    .fee-items {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 44px 44px 48px 1fr;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .fee-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      background: #eee;
+    }
+
+    .fee-count {
+      width: 44px;
+      height: 44px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f2f2f2;
+      color: #9a9da0;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .fee-total {
+      text-align: right;
+      color: #202124;
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .fee-total b {
+      font-size: 25px;
+      font-weight: 950;
+    }
+
+    .detail-actions {
+      display: none;
+    }
+
+    .screen.is-detail .detail-actions {
+      display: block;
+    }
+
+    .detail-home-btn {
+      width: 100%;
+      height: 50px;
+      border: 0;
+      border-radius: 16px;
+      background: var(--brand-yellow);
+      color: #111;
+      font-family: inherit;
+      font-size: 18px;
+      font-weight: 950;
+      box-shadow: 0 8px 18px rgba(255,221,0,.22);
+    }
+
+    .waimai-home-view {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 30;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #f5f5f5;
+      color: #111;
+      scrollbar-width: none;
+    }
+
+    .waimai-home-view::-webkit-scrollbar {
+      display: none;
+    }
+
+    .screen.is-waimai-home .waimai-home-view {
+      display: block;
+    }
+
+    .senior-home-view {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 31;
+      overflow: hidden;
+      background: #f5f5f5;
+    }
+
+    .screen.is-senior-home .senior-home-view {
+      display: block;
+    }
+
+    .senior-home-shot {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .senior-voice-hotspot {
+      position: absolute;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .senior-home-view[data-scheme="scheme-1"] .senior-voice-hotspot {
+      left: 8px;
+      top: 185px;
+      width: 343px;
+      height: 136px;
+      border-radius: 16px;
+    }
+
+    .senior-home-view[data-scheme="scheme-2"] .senior-voice-hotspot {
+      left: 20px;
+      top: 239px;
+      width: 319px;
+      height: 69px;
+      border-radius: 34px;
+    }
+
+    .senior-home-view[data-scheme="scheme-2-1"] .senior-voice-hotspot {
+      left: 18px;
+      top: 636px;
+      width: 323px;
+      height: 66px;
+      border-radius: 33px;
+    }
+
+    .senior-home-view[data-scheme="scheme-3"] .senior-voice-hotspot {
+      left: 8px;
+      top: 192px;
+      width: 343px;
+      height: 244px;
+      border-radius: 14px;
+    }
+
+    .senior-home-view[data-scheme="scheme-5"] .senior-voice-hotspot {
+      left: 128px;
+      top: 682px;
+      width: 104px;
+      height: 106px;
+      border-radius: 52px;
+    }
+
+    .wm-header {
+      min-height: 292px;
+      padding: 17px 10px 0;
+      background: linear-gradient(180deg, #ffe436 0%, #ffdd16 68%, #f5f5f5 68%, #f5f5f5 100%);
+    }
+
+    .wm-status {
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 38px;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 780;
+    }
+
+    .wm-status-icons {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .wm-loc-row {
+      height: 58px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .wm-mode {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .wm-mode strong {
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .wm-mode span {
+      position: relative;
+      padding-left: 9px;
+      color: rgba(17,17,17,.42);
+      font-size: 25px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .wm-mode span::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 2px;
+      bottom: 2px;
+      width: 1px;
+      background: rgba(0,0,0,.18);
+    }
+
+    .wm-mode em {
+      position: absolute;
+      left: 46px;
+      top: -17px;
+      padding: 2px 5px;
+      border-radius: 8px;
+      background: #ff5a56;
+      color: #fff;
+      font-size: 12px;
+      font-style: normal;
+      font-weight: 900;
+    }
+
+    .wm-address {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 3px;
+      font-size: 16px;
+      font-weight: 920;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wm-msg {
+      width: 34px;
+      height: 34px;
+      border: 3px solid #111;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .wm-search {
+      height: 40px;
+      margin: 1px 0 12px;
+      padding: 0 4px 0 14px;
+      border-radius: 20px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 1fr 68px;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wm-search-placeholder {
+      color: #999;
+      font-size: 16px;
+      font-weight: 760;
+    }
+
+    .wm-search-btn {
+      height: 34px;
+      border: 0;
+      border-radius: 17px;
+      background: linear-gradient(135deg, #ffe84d, #ffdd16);
+      color: #111;
+      font-size: 17px;
+      font-weight: 950;
+      font-family: inherit;
+    }
+
+    .wm-kingkong {
+      height: 120px;
+      margin-top: 0;
+      padding: 16px 8px 0;
+      border-radius: 20px 20px 0 0;
+      background: #fff;
+      display: grid;
+      grid-template-columns: repeat(6, 64px);
+      gap: 9px;
+      overflow: hidden;
+    }
+
+    .wm-kk-item {
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.1;
+      font-weight: 780;
+      white-space: nowrap;
+    }
+
+    .wm-kk-icon {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto 8px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 35% 25%, #fff8ec 0 20%, #ff6e5d 21% 100%);
+      font-size: 28px;
+    }
+
+    .wm-kk-item:nth-child(2) .wm-kk-icon { background: radial-gradient(circle at 50% 28%, #ffd4e5 0 25%, #ffc000 26% 100%); }
+    .wm-kk-item:nth-child(3) .wm-kk-icon { background: radial-gradient(circle at 50% 25%, #ffe6a3 0 24%, #2bc9d6 25% 100%); }
+    .wm-kk-item:nth-child(4) .wm-kk-icon { background: radial-gradient(circle at 50% 35%, #ffdc6b 0 35%, #ff7a5a 36% 100%); }
+    .wm-kk-item:nth-child(5) .wm-kk-icon { background: radial-gradient(circle at 50% 30%, #ffe84e 0 35%, #2ec0a9 36% 100%); }
+
+    .wm-page-dot {
+      width: 30px;
+      height: 5px;
+      margin: -9px auto 10px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #ffdd00 0 62%, #e8e8e8 63% 100%);
+    }
+
+    .wm-elder-entry {
+      height: 70px;
+      margin: 0 10px 10px;
+      padding: 0 10px 0 14px;
+      border-radius: 18px;
+      display: grid;
+      grid-template-columns: 58px 1fr 86px;
+      align-items: center;
+      gap: 8px;
+      background: #fff;
+    }
+
+    .wm-elder-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #111;
+      font-size: 30px;
+      font-weight: 950;
+    }
+
+    .wm-elder-title {
+      font-size: 20px;
+      line-height: 1.15;
+      font-weight: 950;
+    }
+
+    .wm-elder-title span {
+      margin-left: 5px;
+      padding: 0 4px;
+      border-radius: 6px;
+      background: #fff0ef;
+      color: #ff3b30;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .wm-elder-sub {
+      margin-top: 5px;
+      color: #222;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 820;
+    }
+
+    .wm-use-btn {
+      height: 38px;
+      border: 0;
+      border-radius: 19px;
+      background: #ffdd00;
+      color: #111;
+      font-size: 18px;
+      font-weight: 950;
+      font-family: inherit;
+    }
+
+    .wm-deals {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 0 10px;
+    }
+
+    .wm-deal-card {
+      min-height: 198px;
+      padding: 12px 10px 10px;
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .wm-deal-head {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 23px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .wm-deal-head span {
+      color: #ff3b30;
+      font-size: 14px;
+      font-weight: 860;
+    }
+
+    .wm-deal-item {
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      gap: 10px;
+      margin-top: 9px;
+    }
+
+    .wm-deal-item img {
+      width: 86px;
+      height: 66px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #eee;
+    }
+
+    .wm-deal-name {
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 890;
+    }
+
+    .wm-deal-sub {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #363b40;
+      line-height: 1.2;
+      font-weight: 730;
+    }
+
+    .wm-deal-price {
+      margin-top: 7px;
+      color: #ff2d19;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .wm-filter-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) 44px;
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .wm-filter-row span {
+      height: 38px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      color: #55595e;
+      font-size: 15px;
+      font-weight: 780;
+    }
+
+    .wm-merchant-list {
+      padding: 0 10px 82px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .wm-merchant-card {
+      position: relative;
+      min-height: 158px;
+      padding: 10px;
+      border-radius: 16px;
+      background: #fff;
+      overflow: visible;
+    }
+
+    .wm-shop-logo {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      width: 105px;
+      height: 105px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 32px;
+      line-height: 1.05;
+      text-align: center;
+      font-weight: 950;
+      background: #e60012;
+    }
+
+    .wm-shop-logo.blue {
+      background: #2b7ec2;
+      font-size: 18px;
+    }
+
+    .wm-shop-main {
+      margin-left: 113px;
+      min-height: 106px;
+    }
+
+    .wm-shop-name {
+      padding-right: 12px;
+      font-size: 21px;
+      line-height: 1.1;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wm-shop-sale {
+      margin-top: 8px;
+      color: #8b8d91;
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 760;
+    }
+
+    .wm-shop-delivery {
+      margin-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      color: #85888d;
+      font-size: 14px;
+      font-weight: 760;
+    }
+
+    .wm-shop-score {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #ff7a00;
+      font-size: 15px;
+      font-weight: 860;
+    }
+
+    .wm-shop-rank {
+      padding: 4px 7px;
+      border-radius: 6px;
+      background: #fff3e6;
+      color: #a95c17;
+      font-size: 13px;
+      font-weight: 850;
+    }
+
+    .wm-shop-tags {
+      margin-top: 9px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .wm-shop-tags span {
+      padding: 3px 6px;
+      border: 1px solid #d8f1d8;
+      border-radius: 5px;
+      color: #2cad36;
+      font-size: 13px;
+      font-weight: 780;
+    }
+
+    .wm-bottom-tab {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 72px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: rgba(255,255,255,.96);
+      border-top: 1px solid #eeeeee;
+      box-shadow: 0 -4px 18px rgba(0,0,0,.04);
+    }
+
+    .wm-tab-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      color: #5d6063;
+      font-size: 14px;
+      font-weight: 780;
+    }
+
+    .wm-tab-item.active {
+      color: #111;
+      font-weight: 950;
+    }
+
+    .wm-tab-icon {
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid currentColor;
+      background: #ffdd00;
+      color: #111;
+      font-size: 13px;
+    }
+
+    .assist-pay-card,
+    .pay-card {
+      display: none;
+    }
+
+    .screen.is-assist-pay .order-card,
+    .screen.is-pay-card .order-card {
+      display: none;
+    }
+
+    .screen.is-assist-pay .assist-pay-card,
+    .screen.is-pay-card .pay-card {
+      display: block;
+    }
+
+    .recommendation-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .talk {
+      position: relative;
+      height: 112px;
+      margin: 0 0 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.86);
+      color: #1f2023;
+      border: 1px solid rgba(255,255,255,.78);
+      box-shadow: 0 8px 22px rgba(31, 38, 34, .06);
+      font-size: 16px;
+      line-height: 1.38;
+      font-weight: 850;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .talk::-webkit-scrollbar {
+      display: none;
+    }
+
+    .talk-text {
+      display: block;
+    }
+
+    .talk.conversation {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 10px 12px;
+    }
+
+    .talk-message {
+      max-width: 90%;
+      padding: 8px 10px;
+      border-radius: 14px;
+      font-size: 15px;
+      line-height: 1.34;
+      font-weight: 850;
+      box-shadow: none;
+    }
+
+    .talk-message.user {
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+      background: var(--brand-yellow);
+      color: #15171b;
+    }
+
+    .talk-message.ai {
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+      background: #fff;
+      color: #1f2023;
+      border: 0;
+    }
+
+    .talk-text::after {
+      content: "";
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      margin-left: 3px;
+      transform: translateY(2px);
+      border-radius: 1px;
+      background: #1f2023;
+      animation: caret-blink .82s steps(1, end) infinite;
+    }
+
+    .talk.done .talk-text::after {
+      opacity: 0;
+      animation: none;
+    }
+
+    @keyframes caret-blink {
+      0%, 52% { opacity: 1; }
+      53%, 100% { opacity: 0; }
+    }
+
+    .y-scroll,
+    .x-scroll {
+      scrollbar-width: none;
+    }
+
+    .y-scroll::-webkit-scrollbar,
+    .x-scroll::-webkit-scrollbar { display: none; }
+
+    .y-scroll {
+      height: 100%;
+      overflow-y: auto;
+      padding-bottom: 148px;
+    }
+
+    .x-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-right: 2px;
+      scroll-snap-type: x mandatory;
+    }
+
+    .rank-badge {
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      z-index: 3;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 18px;
+      background: var(--brand-yellow);
+      color: #111;
+      font-size: 20px;
+      font-weight: 950;
+      box-shadow: 0 4px 12px rgba(0,0,0,.14);
+    }
+
+    .card {
+      position: relative;
+      background: var(--card);
+      border-radius: 24px;
+      box-shadow: none;
+      overflow: visible;
+    }
+
+    .hero-card {
+      flex: 0 0 276px;
+      scroll-snap-align: start;
+      padding: 12px;
+    }
+
+    .hero-card.peek {
+      opacity: .92;
+    }
+
+    .guess-card {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
+      padding: 14px 12px;
+      height: 432px;
+      display: none;
+    }
+
+    .guess-mini-list {
+      display: grid;
+      gap: 13px;
+    }
+
+    .guess-mini-card {
+      position: relative;
+      min-height: 124px;
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      padding: 18px 9px 9px 44px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #f8faf7 0%, #f3f6f1 100%);
+      border: 1px solid rgba(20,23,28,.04);
+    }
+
+    .guess-mini-content {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .guess-mini-img {
+      position: relative;
+      width: 92px;
+      height: 86px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #eee;
+    }
+
+    .guess-mini-img img {
+      width: 92px;
+      height: 86px;
+      display: block;
+      object-fit: cover;
+    }
+
+    .guess-mini-rank {
+      position: absolute;
+      left: 10px;
+      top: 12px;
+      z-index: 4;
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 13px;
+      background: var(--brand-yellow);
+      color: #111;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 950;
+      box-shadow: 0 3px 10px rgba(0,0,0,.14);
+    }
+
+    .guess-mini-name {
+      width: min(100%, 178px);
+      color: #16181d;
+      font-size: 25px;
+      line-height: 1.12;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+
+    .guess-mini-attrs {
+      display: none;
+      width: min(100%, 178px);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,.64);
+      border: 1px solid rgba(20,23,28,.05);
+    }
+
+    .guess-mini-attr {
+      min-width: 0;
+      padding: 7px 4px 8px;
+      text-align: center;
+      position: relative;
+    }
+
+    .guess-mini-attr + .guess-mini-attr::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 1px;
+      background: rgba(20,23,28,.12);
+    }
+
+    .guess-mini-attr-label {
+      color: #888d8a;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .guess-mini-attr-value {
+      margin-top: 5px;
+      color: #2b2f33;
+      font-size: 14px;
+      line-height: 1.05;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .screen.is-guess .hero-card,
+    .screen.is-guess .decision-card {
+      display: none;
+    }
+
+    .screen.is-guess .guess-card {
+      display: block;
+    }
+
+    .screen.is-guess .y-scroll .guess-card {
+      margin-bottom: 12px;
+    }
+
+    .hero-img-wrap {
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .hero-img {
+      width: 100%;
+      height: 204px;
+      display: block;
+      object-fit: cover;
+      border-radius: 20px;
+    }
+
+    .hero-info {
+      padding: 12px 4px 2px;
+    }
+
+    .food-title {
+      margin: 0;
+      color: var(--ink);
+      font-size: 26px;
+      line-height: 1.14;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .store-line {
+      margin-top: 7px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--sub);
+      font-size: 17px;
+      line-height: 1.3;
+      font-weight: 800;
+      flex-wrap: wrap;
+      row-gap: 2px;
+      white-space: normal;
+    }
+
+    .store-line .eta {
+      color: #b45f3b;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .reason {
+      margin-top: 9px;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #6b5832;
+      font-size: 17px;
+      line-height: 1.42;
+      font-weight: 820;
+    }
+
+    .price-block {
+      margin-top: 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .price {
+      color: var(--price-red);
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .save {
+      color: var(--save-red);
+      font-size: 15px;
+      line-height: 1;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 11px;
+    }
+
+    .btn {
+      height: 48px;
+      border-radius: 18px;
+      border: 0;
+      background: var(--brand-yellow);
+      color: #111;
+      font-size: 19px;
+      line-height: 1;
+      font-weight: 950;
+      font-family: inherit;
+    }
+
+    .btn.secondary {
+      background: #fffdf7;
+      color: #776f60;
+      border: 1px solid rgba(20,23,28,.11);
+    }
+
+    .choice-bar {
+      height: 64px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 0;
+      border-radius: 18px;
+      background: transparent;
+    }
+
+    .choice-bar button {
+      border: 0;
+      border-radius: 16px;
+      background: #f1f1ef;
+      color: #74777c;
+      font-size: 17px;
+      font-weight: 900;
+      font-family: inherit;
+      box-shadow: 0 6px 14px rgba(21,25,32,.04);
+    }
+
+    .choice-bar button.active {
+      background: var(--brand-yellow);
+      color: #111;
+      box-shadow: 0 8px 18px rgba(255,221,0,.24);
+    }
+
+    .screen.is-guess .choice-bar button,
+    .screen.is-guess .choice-bar button.active {
+      background: #f1f1ef;
+      color: #74777c;
+      font-size: 17px;
+      font-weight: 900;
+      box-shadow: 0 6px 14px rgba(21,25,32,.04);
+    }
+
+    .bottom-controls {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 12;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 13px 16px 17px;
+      border-radius: 0;
+      background: rgba(246,250,247,.72);
+      border-top: 1px solid rgba(255,255,255,.60);
+      box-shadow: none;
+      backdrop-filter: blur(18px);
+    }
+
+    .bottom-controls::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -36px;
+      height: 36px;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(237,243,238,0), rgba(246,250,247,.72));
+    }
+
+    .call-actions {
+      display: grid;
+      grid-template-columns: 1fr 104px;
+      gap: 12px;
+    }
+
+    .control-btn {
+      height: 48px;
+      border-radius: 16px;
+      border: 1px solid rgba(20,23,28,.12);
+      font-family: inherit;
+      font-size: 17px;
+      font-weight: 950;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+    }
+
+    .hangup-btn {
+      background: #ff453a;
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 8px 18px rgba(255,69,58,.28);
+    }
+
+    .hangup-btn::before {
+      content: "";
+      display: block;
+      width: 18px;
+      height: 18px;
+      background: currentColor;
+      -webkit-mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.28-.28.67-.36 1.03-.24 1.12.37 2.32.57 3.56.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.44.57 3.56.11.36.03.74-.25 1.02l-2.2 2.21Z'/%3E%3C/svg%3E") center / contain no-repeat;
+      mask: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6.62 10.79c1.44 2.83 3.76 5.15 6.59 6.59l2.2-2.2c.28-.28.67-.36 1.03-.24 1.12.37 2.32.57 3.56.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.61 21 3 13.39 3 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.24.2 2.44.57 3.56.11.36.03.74-.25 1.02l-2.2 2.21Z'/%3E%3C/svg%3E") center / contain no-repeat;
+      font-size: 18px;
+      line-height: 1;
+      transform: rotate(135deg);
+    }
+
+    .shuffle-btn {
+      background: rgba(255,255,255,.68);
+      color: #5d625d;
+      border-color: rgba(20,23,28,.15);
+      box-shadow: none;
+    }
+
+    .board.mode-broadcast .hangup-btn {
+      display: none;
+    }
+
+    .board.mode-broadcast .call-actions {
+      grid-template-columns: 1fr;
+    }
+
+    .board.mode-broadcast .shuffle-btn {
+      width: 100%;
+      background: rgba(255,255,255,.82);
+    }
+
+    .board.mode-broadcast .bottom-controls {
+      gap: 10px;
+      padding-bottom: 14px;
+    }
+
+    .list-card {
+      display: grid;
+      grid-template-columns: 132px 1fr;
+      gap: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 22px;
+    }
+
+    .list-img-wrap {
+      position: relative;
+      width: 132px;
+      height: 132px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #f3f3f3;
+    }
+
+    .list-img-wrap img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .list-info {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-right: 2px;
+    }
+
+    .list-title {
+      color: var(--ink);
+      font-size: 24px;
+      line-height: 1.18;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .list-card .store-line {
+      margin-top: 5px;
+      font-size: 16px;
+      gap: 5px;
+      flex-wrap: wrap;
+      white-space: normal;
+    }
+
+    .list-card .price-block {
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .list-card .price {
+      font-size: 29px;
+    }
+
+    .list-card .reason {
+      margin-top: 10px;
+      padding: 0;
+      background: transparent;
+      color: #6b5832;
+      font-size: 18px;
+      line-height: 1.36;
+    }
+
+    .wide-reason-card {
+      align-items: start;
+    }
+
+    .wide-reason-card .list-info {
+      justify-content: flex-start;
+      padding-right: 6px;
+    }
+
+    .wide-reason-card .wide-reason {
+      grid-column: 1 / -1;
+      margin-top: 0;
+      padding: 0 2px;
+      background: transparent;
+      color: #6b5832;
+      font-size: 18px;
+      line-height: 1.42;
+      font-weight: 820;
+    }
+
+    .decision-card {
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 22px;
+    }
+
+    .decision-top {
+      display: block;
+    }
+
+    .decision-card .list-img-wrap {
+      width: 100%;
+      height: 154px;
+      border-radius: 18px;
+    }
+
+    .decision-main-row {
+      margin-top: 12px;
+      display: block;
+    }
+
+    .decision-main-row .list-title {
+      font-size: 25px;
+      line-height: 1.14;
+      white-space: normal;
+    }
+
+    .decision-card .price {
+      font-size: 29px;
+    }
+
+    .decision-card .price-block {
+      margin-top: 13px;
+      gap: 7px;
+      flex-wrap: wrap;
+      row-gap: 4px;
+      justify-content: flex-start;
+    }
+
+    .decision-card .save {
+      font-size: 14px;
+    }
+
+    .full-reason {
+      margin-top: 13px;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #6b5832;
+      font-size: 18px;
+      line-height: 1.38;
+      font-weight: 820;
+    }
+
+    .merchant-chip-row {
+      display: flex;
+      margin-top: 6px;
+    }
+
+    .merchant-chip {
+      min-height: 0;
+      display: inline-flex;
+      align-items: center;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--sub);
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .tag-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: var(--sage-bg);
+      color: var(--sage);
+      font-size: 15px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .tag.hot {
+      background: #fff1ed;
+      color: var(--price-red);
+    }
+
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 11px;
+    }
+
+    .metric {
+      min-height: 42px;
+      padding: 0 4px;
+      border-radius: 13px;
+      background: #f6f5ef;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .metric b {
+      display: block;
+      color: #1e2023;
+      font-size: 15px;
+      line-height: 1.15;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .metric span {
+      display: block;
+      margin-top: 5px;
+      color: #8b8f94;
+      font-size: 12px;
+      line-height: 1;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .order-card {
+      width: 100%;
+      padding: 16px 14px 14px;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(20, 24, 28, .06);
+      overflow: hidden;
+    }
+
+    .order-address {
+      position: relative;
+      padding-right: 22px;
+      color: #111;
+      font-size: 20px;
+      line-height: 1.18;
+      font-weight: 950;
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    .order-address small {
+      display: block;
+      margin-top: 5px;
+      color: #111;
+      font-size: 19px;
+      line-height: 1.18;
+      font-weight: 920;
+    }
+
+    .order-chevron::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      border-top: 3px solid #c7c7c7;
+      border-right: 3px solid #c7c7c7;
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .order-time {
+      position: relative;
+      margin-top: 17px;
+      padding-right: 22px;
+      color: #16181d;
+      font-size: 20px;
+      line-height: 1.1;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .order-time span {
+      color: #ff6b00;
+    }
+
+    .order-divider {
+      height: 1px;
+      margin: 18px 0 14px;
+      background: #eeeeee;
+    }
+
+    .order-store {
+      color: #2b2f33;
+      font-size: 18px;
+      line-height: 1.1;
+      font-weight: 850;
+    }
+
+    .order-item {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 58px;
+      gap: 12px;
+      align-items: start;
+      margin-top: 16px;
+    }
+
+    .order-item > div:nth-child(2) {
+      min-width: 0;
+    }
+
+    .order-item-img {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #f1f1f1;
+    }
+
+    .order-item-img img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .order-item-title {
+      color: #111;
+      font-size: 21px;
+      line-height: 1.16;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .order-item-options {
+      margin-top: 7px;
+      color: #989898;
+      font-size: 16px;
+      line-height: 1.22;
+      font-weight: 780;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: clip;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .order-item-qty {
+      margin-top: 6px;
+      color: #8a8d91;
+      font-size: 16px;
+      font-weight: 820;
+    }
+
+    .order-item-price {
+      color: #111;
+      font-size: 20px;
+      line-height: 1.1;
+      font-weight: 900;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .order-summary {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: 12px;
+      row-gap: 6px;
+      align-items: end;
+    }
+
+    .order-discount {
+      color: #ff3b30;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 860;
+    }
+
+    .order-fee {
+      color: #8e8e93;
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 820;
+    }
+
+    .order-total {
+      grid-row: 1 / span 2;
+      grid-column: 2;
+      align-self: end;
+      color: #ff2d19;
+      font-size: 36px;
+      line-height: .9;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .order-total small {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .order-actions {
+      display: none;
+    }
+
+    .order-action-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .screen.is-assist-pay .order-action-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .screen.is-pay-card .order-action-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .screen.is-assist-pay .order-btn.pay {
+      display: none;
+    }
+
+    .screen.is-pay-card .order-action-row .order-btn:not(.cancel):not(.pay) {
+      display: none;
+    }
+
+    .screen.is-assist-pay .order-action-row .order-btn:not(.cancel):not(.pay) {
+      background: var(--brand-yellow);
+      color: #18191b;
+      box-shadow: 0 8px 18px rgba(255,221,0,.24);
+    }
+
+    .order-btn {
+      height: 48px;
+      border: 0;
+      border-radius: 16px;
+      font-family: inherit;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 950;
+      color: #18191b;
+      background: #fff;
+      box-shadow: 0 6px 14px rgba(21, 25, 32, .08);
+    }
+
+    .order-btn.pay {
+      background: var(--brand-yellow);
+      box-shadow: 0 8px 18px rgba(255,221,0,.24);
+    }
+
+    .order-btn.cancel {
+      color: #18191b;
+    }
+
+    .order-hangup {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .screen.is-ordering .order-actions {
+      display: block;
+    }
+
+    .assist-pay-card,
+    .pay-card {
+      width: 100%;
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(20, 24, 28, .06);
+      overflow: hidden;
+    }
+
+    .assist-pay-card {
+      min-height: 414px;
+      padding: 26px 18px 18px;
+      text-align: center;
+    }
+
+    .assist-title {
+      color: #202124;
+      font-size: 21px;
+      line-height: 1.15;
+      font-weight: 950;
+    }
+
+    .assist-amount {
+      margin-top: 13px;
+      color: #08090a;
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .assist-amount small {
+      margin-right: 4px;
+      font-size: 22px;
+      font-weight: 950;
+    }
+
+    .assist-countdown {
+      margin-top: 16px;
+      color: #686d70;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 820;
+    }
+
+    .assist-countdown b {
+      display: inline-flex;
+      min-width: 20px;
+      height: 22px;
+      align-items: center;
+      justify-content: center;
+      margin: 0 2px;
+      border-radius: 5px;
+      background: #333;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .assist-notice {
+      margin-top: 36px;
+      padding: 17px 15px;
+      border-radius: 12px;
+      background: #fff8dc;
+      color: #9a7a43;
+      text-align: left;
+      font-size: 15px;
+      line-height: 1.52;
+      font-weight: 760;
+    }
+
+    .assist-notice-title {
+      margin-bottom: 8px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .assist-self {
+      margin-top: 18px;
+      border: 0;
+      background: transparent;
+      color: #9a9da0;
+      font-size: 15px;
+      font-weight: 850;
+      font-family: inherit;
+    }
+
+    .pay-card {
+      padding: 18px 14px 16px;
+      background: #f7f7f6;
+      box-shadow: none;
+    }
+
+    .pay-head {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      color: #121315;
+    }
+
+    .pay-head-title {
+      text-align: center;
+      font-size: 20px;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .pay-summary {
+      padding: 12px 0 16px;
+      text-align: center;
+    }
+
+    .pay-time {
+      color: #85888a;
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 760;
+    }
+
+    .pay-amount {
+      margin-top: 10px;
+      color: #050607;
+      font-size: 40px;
+      line-height: .95;
+      font-weight: 950;
+    }
+
+    .pay-amount small {
+      margin-right: 4px;
+      font-size: 24px;
+      font-weight: 950;
+    }
+
+    .pay-meta {
+      margin-top: 8px;
+      color: #7f8386;
+      font-size: 16px;
+      line-height: 1.2;
+      font-weight: 760;
+    }
+
+    .pay-methods {
+      display: grid;
+      gap: 12px;
+    }
+
+    .pay-method {
+      height: 62px;
+      display: grid;
+      grid-template-columns: 42px 1fr 28px;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      border-radius: 12px;
+      background: #fff;
+      color: #1d1f22;
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .pay-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: block;
+      object-fit: contain;
+    }
+
+    .method-check {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid #d0d2d3;
+      position: relative;
+    }
+
+    .pay-method.is-selected .method-check {
+      border-color: var(--brand-yellow);
+      background: var(--brand-yellow);
+    }
+
+    .pay-method.is-selected .method-check::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      width: 11px;
+      height: 6px;
+      border-left: 3px solid #111;
+      border-bottom: 3px solid #111;
+      transform: rotate(-45deg);
+    }
+
+    .sheet-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: end;
+      background: rgba(0,0,0,.64);
+    }
+
+    .screen.is-sheet-open .sheet-layer {
+      display: flex;
+    }
+
+    .sheet {
+      position: relative;
+      width: 100%;
+      max-height: 72%;
+      border-radius: 20px 20px 0 0;
+      background: #fff;
+      box-shadow: 0 -16px 34px rgba(0,0,0,.16);
+      overflow: hidden;
+      transform: translateY(100%);
+      animation: sheet-rise .22s ease forwards;
+    }
+
+    @keyframes sheet-rise {
+      to { transform: translateY(0); }
+    }
+
+    .sheet.address-sheet {
+      height: 464px;
+      padding: 18px 16px 72px;
+    }
+
+    .sheet.time-sheet {
+      height: 354px;
+      padding: 18px 0 28px;
+    }
+
+    .sheet-title {
+      margin: 0;
+      text-align: center;
+      color: #18191b;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 950;
+    }
+
+    .sheet-close {
+      position: absolute;
+      right: 13px;
+      top: 14px;
+      width: 34px;
+      height: 34px;
+      border: 0;
+      border-radius: 17px;
+      background: transparent;
+      color: #8e928d;
+      font-size: 30px;
+      line-height: 30px;
+      font-weight: 300;
+      font-family: inherit;
+    }
+
+    .address-list {
+      height: 336px;
+      margin-top: 14px;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .address-list::-webkit-scrollbar,
+    .time-list::-webkit-scrollbar { display: none; }
+
+    .address-row {
+      position: relative;
+      min-height: 70px;
+      display: grid;
+      grid-template-columns: 32px 1fr 28px;
+      align-items: center;
+      border-bottom: 1px solid #f1f1ed;
+      color: #191a1d;
+    }
+
+    .radio-dot {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.6px solid #d8d9d4;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .address-row.is-selected .radio-dot {
+      border-color: var(--brand-yellow);
+      background: var(--brand-yellow);
+    }
+
+    .address-row.is-selected .radio-dot::after {
+      content: "";
+      width: 8px;
+      height: 5px;
+      border-left: 2px solid #111;
+      border-bottom: 2px solid #111;
+      transform: rotate(-45deg) translate(1px,-1px);
+    }
+
+    .address-main {
+      min-width: 0;
+    }
+
+    .address-title {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #17181b;
+      font-size: 16px;
+      line-height: 1.25;
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .address-tag {
+      flex: 0 0 auto;
+      color: #ff7a00;
+      font-size: 13px;
+      font-weight: 950;
+    }
+
+    .address-person {
+      margin-top: 5px;
+      color: #a1a3a5;
+      font-size: 13px;
+      line-height: 1.15;
+      font-weight: 760;
+    }
+
+    .address-edit {
+      width: 24px;
+      height: 24px;
+      border: 0;
+      background: transparent;
+      color: #a5a7a6;
+      position: relative;
+    }
+
+    .address-edit::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 11px;
+      width: 13px;
+      height: 3px;
+      border-radius: 2px;
+      background: currentColor;
+      transform: rotate(-45deg);
+    }
+
+    .address-edit::after {
+      content: "";
+      position: absolute;
+      left: 4px;
+      top: 16px;
+      width: 12px;
+      height: 5px;
+      border-left: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      border-radius: 0 0 0 2px;
+    }
+
+    .add-address-btn {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      bottom: 28px;
+      height: 48px;
+      border: 0;
+      border-radius: 24px;
+      background: var(--brand-yellow);
+      color: #18191b;
+      font-size: 17px;
+      font-weight: 950;
+      font-family: inherit;
+      box-shadow: 0 8px 18px rgba(255,221,0,.24);
+    }
+
+    .add-address-btn::before {
+      content: "+";
+      display: inline-grid;
+      place-items: center;
+      width: 18px;
+      height: 18px;
+      margin-right: 4px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    .sheet-home-indicator {
+      position: absolute;
+      left: 50%;
+      bottom: 8px;
+      width: 132px;
+      height: 4px;
+      border-radius: 4px;
+      background: #111;
+      transform: translateX(-50%);
+    }
+
+    .time-tabs {
+      margin-top: 17px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid #f2f2ee;
+      height: 254px;
+    }
+
+    .date-col {
+      background: #f6f6f2;
+      overflow: hidden;
+    }
+
+    .date-tab {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      padding-left: 18px;
+      color: #6f7377;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .date-tab.is-selected {
+      background: #fff;
+      color: #17181b;
+    }
+
+    .time-col {
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .time-list {
+      height: 100%;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+
+    .time-row {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 0 16px 0 12px;
+      border-bottom: 1px solid #f1f1ed;
+      color: #2d2f31;
+      font-size: 14px;
+      font-weight: 860;
+    }
+
+    .time-row.is-selected {
+      color: #ff7a00;
+      font-weight: 950;
+    }
+
+    .time-check {
+      flex: 0 0 auto;
+      width: 14px;
+      height: 8px;
+      border-left: 2px solid #ff7a00;
+      border-bottom: 2px solid #ff7a00;
+      transform: rotate(-45deg);
+      opacity: 0;
+    }
+
+    .time-row.is-selected .time-check {
+      opacity: 1;
+    }
+
+    /* Waimai home high-fidelity rebuild */
+    .waimai-home-view {
+      background: #f5f5f5;
+      font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    }
+
+    .wm-header {
+      min-height: 279px;
+      padding: 18px 10px 0;
+      background: linear-gradient(180deg, #ffe846 0%, #ffdd18 66%, #f5f5f5 66%, #f5f5f5 100%);
+    }
+
+    .wm-status {
+      height: 36px;
+      padding: 0 14px 0 36px;
+      font-size: 15px;
+      font-weight: 850;
+    }
+
+    .wm-status-icons {
+      gap: 6px;
+      color: #111;
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: .2px;
+    }
+
+    .wm-status-signal {
+      width: 22px;
+      height: 16px;
+      display: inline-grid;
+      grid-template-columns: repeat(4, 4px);
+      gap: 2px;
+      align-items: end;
+    }
+
+    .wm-status-signal i {
+      display: block;
+      width: 4px;
+      border-radius: 2px;
+      background: #111;
+    }
+
+    .wm-status-signal i:nth-child(1) { height: 6px; }
+    .wm-status-signal i:nth-child(2) { height: 9px; }
+    .wm-status-signal i:nth-child(3) { height: 13px; }
+    .wm-status-signal i:nth-child(4) { height: 16px; }
+
+    .wm-battery {
+      width: 23px;
+      height: 12px;
+      border: 2px solid #111;
+      border-radius: 3px;
+      position: relative;
+      display: inline-block;
+    }
+
+    .wm-battery::before {
+      content: "";
+      position: absolute;
+      left: 2px;
+      right: 3px;
+      top: 2px;
+      bottom: 2px;
+      border-radius: 1px;
+      background: #111;
+    }
+
+    .wm-battery::after {
+      content: "";
+      position: absolute;
+      right: -5px;
+      top: 3px;
+      width: 3px;
+      height: 5px;
+      border-radius: 1px;
+      background: #111;
+    }
+
+    .wm-loc-row {
+      height: 52px;
+      margin-top: 8px;
+      grid-template-columns: 151px minmax(0,1fr) 32px;
+      gap: 5px;
+    }
+
+    .wm-mode strong {
+      font-size: 27px;
+      font-weight: 950;
+      letter-spacing: -1px;
+    }
+
+    .wm-mode span {
+      font-size: 27px;
+      color: rgba(17,17,17,.42);
+      letter-spacing: -1px;
+    }
+
+    .wm-mode em {
+      left: 45px;
+      top: -19px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      font-size: 13px;
+      letter-spacing: 0;
+      background: #ff5960;
+    }
+
+    .wm-address {
+      justify-content: flex-end;
+      font-size: 15px;
+      font-weight: 950;
+    }
+
+    .wm-msg {
+      width: 31px;
+      height: 31px;
+      border-width: 3px;
+      font-size: 14px;
+      letter-spacing: -1px;
+      transform: translateX(1px);
+    }
+
+    .wm-search {
+      height: 43px;
+      margin: 3px 0 20px;
+      padding: 0 4px 0 15px;
+      border-radius: 22px;
+      grid-template-columns: 1fr 68px;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.95);
+    }
+
+    .wm-search-placeholder {
+      color: #9a9a9a;
+      font-size: 17px;
+      font-weight: 820;
+    }
+
+    .wm-search-btn {
+      height: 36px;
+      border-radius: 19px;
+      font-size: 18px;
+      background: #ffdd19;
+      box-shadow: none;
+    }
+
+    .wm-kingkong {
+      height: 121px;
+      margin: 0 -10px;
+      padding: 17px 14px 0;
+      border-radius: 21px 21px 0 0;
+      grid-template-columns: repeat(6, 54px);
+      gap: 13px;
+      background: #fff;
+    }
+
+    .wm-kk-item {
+      font-size: 14px;
+      font-weight: 760;
+      overflow: visible;
+    }
+
+    .wm-kk-icon {
+      width: auto;
+      height: 48px;
+      max-width: 58px;
+      margin: 0 auto 9px;
+      border-radius: 0;
+      background: none !important;
+      object-fit: contain;
+      display: block;
+    }
+
+    .wm-page-dot {
+      width: 30px;
+      height: 5px;
+      margin: -18px auto 17px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .wm-elder-entry {
+      height: 70px;
+      margin: 0 10px 10px;
+      padding: 0 10px 0 15px;
+      grid-template-columns: 47px minmax(0, 1fr) 72px;
+      gap: 7px;
+      border-radius: 16px;
+      box-shadow: none;
+    }
+
+    .wm-elder-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 0;
+      font-size: 31px;
+      line-height: 1;
+      font-weight: 950;
+      background: none;
+    }
+
+    .wm-elder-title {
+      font-size: 20px;
+      line-height: 1.05;
+      letter-spacing: -.5px;
+      white-space: nowrap;
+    }
+
+    .wm-elder-title span {
+      margin-left: 4px;
+      font-size: 15px;
+      color: #ff3b30;
+      background: #fff4f0;
+      border-radius: 6px;
+      padding: 1px 3px;
+      vertical-align: 2px;
+    }
+
+    .wm-elder-sub {
+      margin-top: 7px;
+      font-size: 15px;
+      font-weight: 820;
+      letter-spacing: .2px;
+      white-space: nowrap;
+    }
+
+    .wm-use-btn {
+      height: 32px;
+      border-radius: 17px;
+      font-size: 16px;
+      background: #ffdd00;
+      padding: 0 13px;
+      white-space: nowrap;
+    }
+
+    .wm-deals {
+      gap: 8px;
+      padding: 0 10px;
+    }
+
+    .wm-deal-card {
+      height: 236px;
+      min-height: 0;
+      padding: 12px 10px 9px;
+      border-radius: 13px;
+      overflow: hidden;
+    }
+
+    .wm-deal-head {
+      margin-bottom: 9px;
+      font-size: 20px;
+      gap: 4px;
+      letter-spacing: -1px;
+      white-space: nowrap;
+    }
+
+    .wm-deal-head span {
+      font-size: 13px;
+      color: #ff3124;
+      white-space: nowrap;
+    }
+
+    .wm-deal-item {
+      grid-template-columns: 68px minmax(0, 1fr);
+      gap: 7px;
+      margin-top: 8px;
+      min-height: 68px;
+    }
+
+    .wm-deal-item img {
+      width: 68px;
+      height: 68px;
+      border-radius: 6px;
+    }
+
+    .wm-deal-name {
+      font-size: 15px;
+      line-height: 1.1;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wm-deal-sub {
+      margin-top: 5px;
+      color: #252a31;
+      font-size: 14px;
+      line-height: 1.12;
+      font-weight: 780;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .wm-deal-price {
+      margin-top: 6px;
+      font-size: 20px;
+      color: #ff2d19;
+      white-space: nowrap;
+    }
+
+    .wm-deal-price small {
+      display: block;
+      margin: 3px 0 0;
+      font-size: 11px;
+      font-weight: 850;
+      vertical-align: 1px;
+      overflow: visible;
+    }
+
+    .wm-filter-row {
+      grid-template-columns: 1fr 1fr 1fr 1fr 42px;
+      gap: 8px;
+      padding: 9px 10px;
+    }
+
+    .wm-filter-row span {
+      height: 38px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 760;
+      white-space: nowrap;
+    }
+
+    .wm-merchant-list {
+      padding: 0 10px 82px;
+      gap: 10px;
+    }
+
+    .wm-merchant-card {
+      min-height: 158px;
+      padding: 10px;
+      border-radius: 16px;
+    }
+
+    .wm-shop-logo {
+      width: 132px;
+      height: 132px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #eee;
+      font-size: 0;
+    }
+
+    .wm-shop-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .wm-shop-main {
+      margin-left: 146px;
+      min-height: 132px;
+      padding-top: 2px;
+    }
+
+    .wm-shop-name {
+      font-size: 21px;
+      line-height: 1.12;
+      font-weight: 950;
+      letter-spacing: -.5px;
+    }
+
+    .wm-shop-sale {
+      margin-top: 10px;
+      color: #8d8f93;
+      font-size: 15px;
+    }
+
+    .wm-shop-delivery {
+      margin-top: 9px;
+      font-size: 15px;
+    }
+
+    .wm-shop-score {
+      margin-top: 10px;
+      gap: 6px;
+      font-size: 16px;
+    }
+
+    .wm-shop-rank {
+      padding: 4px 7px;
+      border-radius: 6px;
+      font-size: 14px;
+      background: #fff2e7;
+      color: #b86117;
+    }
+
+    .wm-shop-tags span {
+      padding: 2px 5px;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .wm-bottom-tab {
+      height: 76px;
+      z-index: 3;
+    }
+
+    .wm-tab-item {
+      font-size: 15px;
+      gap: 4px;
+    }
+
+    .wm-tab-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 0;
+      border: 0;
+      background: none;
+      color: inherit;
+      font-size: 26px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <main class="board mode-call direction-vertical single-flow">
+    <div class="version-controls" aria-label="版本管理">
+      <div class="version-row">
+        <div class="version-label">页面入口</div>
+        <div class="version-switch" role="group" aria-label="页面入口">
+          <button type="button" data-page-entry="waimai">外卖首页</button>
+          <button class="active" type="button" data-page-entry="voice">语音点餐</button>
+        </div>
+      </div>
+      <div class="version-row">
+        <div class="version-label">交互方式</div>
+        <div class="version-switch" role="group" aria-label="交互方式">
+          <button class="active" type="button" data-version="call">打电话版</button>
+          <button type="button" data-version="broadcast">语音播报</button>
+        </div>
+      </div>
+      <div class="version-row">
+        <div class="version-label">滑动方向</div>
+        <div class="version-switch" role="group" aria-label="滑动方向">
+          <button class="active" type="button" data-direction-option="horizontal">左右横滑</button>
+          <button type="button" data-direction-option="vertical">上下滑动</button>
+        </div>
+      </div>
+      <div class="version-row">
+        <div class="version-label">大字方案</div>
+        <div class="version-switch scheme-switch" role="group" aria-label="大字版方案">
+          <button class="active" type="button" data-senior-scheme="scheme-1">1</button>
+          <button type="button" data-senior-scheme="scheme-2">2</button>
+          <button type="button" data-senior-scheme="scheme-2-1">2-1</button>
+          <button type="button" data-senior-scheme="scheme-3">3</button>
+          <button type="button" data-senior-scheme="scheme-5">5</button>
+        </div>
+      </div>
+    </div>
+    <section class="grid">
+      <article class="concept" data-view-direction="horizontal">
+        <div class="phone">
+          <div class="screen">
+            <div class="status">
+              <span>14:40</span>
+              <div class="status-right"><span class="signal"><i></i><i></i><i></i><i></i></span><span>5G</span><span class="battery"></span></div>
+            </div>
+            <div class="top">
+              <div class="nav"><div class="nav-title">语音点餐</div><button class="mute-btn" type="button">静音</button></div>
+            </div>
+            <div class="body single">
+              <div class="talk" data-full-text="给您推荐第一道鲜虾干贝粥单人套餐，潮粥荟做的，粥底鲜香，配流沙包和凉菜，15分钟送达。想吃就选第一道；也可以切到第二道、第三道，或者点换一换。"><span class="talk-text"></span></div>
+              <div class="recommendation-view x-scroll">
+                <section class="card hero-card">
+                  <span class="rank-badge card-rank">1</span>
+                  <div class="hero-img-wrap">
+                    <img class="hero-img" src="assets/dish-shrimp-scallop-congee-hifi.png" alt="鲜虾干贝粥单人套餐">
+                  </div>
+                  <div class="hero-info">
+                    <h2 class="food-title">鲜虾干贝粥单人套餐</h2>
+                    <div class="store-line"><span>潮粥荟</span><span>·</span><span class="eta">预计15分钟送达</span></div>
+                    <div class="reason">“粥底鲜香，配流沙包和凉菜，吃起来稳妥。”</div>
+                    <div class="price-block"><span class="price">¥40.9</span><span class="save">立省29.1元</span></div>
+                  </div>
+                </section>
+                <section class="card hero-card peek">
+                  <span class="rank-badge card-rank">2</span>
+                  <div class="hero-img-wrap">
+                    <img class="hero-img" src="assets/dish-tofu-soup-set-hifi.png" alt="嫩豆腐汤套餐">
+                  </div>
+                  <div class="hero-info">
+                    <h2 class="food-title">嫩豆腐汤套餐</h2>
+                    <div class="store-line"><span>三泉冷面</span><span>·</span><span class="eta">预计28分钟送达</span></div>
+                    <div class="reason">“汤饭搭配，有热汤有主食，吃着省心。”</div>
+                    <div class="price-block"><span class="price">¥37.9</span><span class="save">省15.1元</span></div>
+                  </div>
+                </section>
+                <section class="card hero-card peek">
+                  <span class="rank-badge card-rank">3</span>
+                  <div class="hero-img-wrap">
+                    <img class="hero-img" src="assets/dish-sour-fish-set-hifi.png" alt="野果酸汤鱼套餐">
+                  </div>
+                  <div class="hero-info">
+                    <h2 class="food-title">野果酸汤鱼套餐</h2>
+                    <div class="store-line"><span>云海肴云南菜</span><span>·</span><span class="eta">预计28分钟送达</span></div>
+                    <div class="reason">“酸汤开胃，鱼肉清爽，最近复购不错。”</div>
+                    <div class="price-block"><span class="price">¥26.9</span><span class="save">低至5.8折</span></div>
+                  </div>
+                </section>
+                <section class="card guess-card">
+                  <div class="guess-mini-list">
+                    <div class="guess-mini-card"><span class="guess-mini-rank">1</span><div class="guess-mini-img"><img src="assets/dish-chili-pork-hifi.png" alt="辣椒炒肉"></div><div class="guess-mini-content"><div class="guess-mini-name">辣椒炒肉</div><div class="guess-mini-attrs"><div class="guess-mini-attr"><div class="guess-mini-attr-label">口感</div><div class="guess-mini-attr-value">焦香</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">做法</div><div class="guess-mini-attr-value">爆炒</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">食材</div><div class="guess-mini-attr-value">猪肉</div></div></div></div></div>
+                    <div class="guess-mini-card"><span class="guess-mini-rank">2</span><div class="guess-mini-img"><img src="assets/dish-spicy-chicken-hifi.png" alt="辣子鸡"></div><div class="guess-mini-content"><div class="guess-mini-name">辣子鸡</div><div class="guess-mini-attrs"><div class="guess-mini-attr"><div class="guess-mini-attr-label">口感</div><div class="guess-mini-attr-value">酥麻</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">做法</div><div class="guess-mini-attr-value">干煸</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">食材</div><div class="guess-mini-attr-value">鸡肉</div></div></div></div></div>
+                    <div class="guess-mini-card"><span class="guess-mini-rank">3</span><div class="guess-mini-img"><img src="assets/dish-boiled-beef-hifi.png" alt="水煮牛肉"></div><div class="guess-mini-content"><div class="guess-mini-name">水煮牛肉</div><div class="guess-mini-attrs"><div class="guess-mini-attr"><div class="guess-mini-attr-label">口感</div><div class="guess-mini-attr-value">嫩滑</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">做法</div><div class="guess-mini-attr-value">热油浇</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">食材</div><div class="guess-mini-attr-value">牛肉</div></div></div></div></div>
+                  </div>
+                </section>
+              </div>
+              <div class="order-view">
+                <section class="order-card">
+                  <div class="order-address order-chevron">来广营乡创远路34号融新科技中心FG中间南侧取餐柜<small>木木女士 17600246867</small></div>
+                  <div class="order-time order-chevron">预计<span>16:00-16:30</span>送达</div>
+                  <div class="order-divider"></div>
+                  <div class="order-store">潮粥荟</div>
+                  <div class="order-item">
+                    <div class="order-item-img"><img src="assets/dish-shrimp-scallop-congee-hifi.png" alt="鲜虾干贝粥单人套餐"></div>
+                    <div>
+                      <div class="order-item-title">鲜虾干贝粥单人套餐</div>
+                      <div class="order-item-options">流沙包，凉菜，默认口味，餐具</div>
+                      <div class="order-item-qty">x1</div>
+                    </div>
+                    <div class="order-item-price">¥40.9</div>
+                  </div>
+                  <div class="order-divider"></div>
+                  <div class="order-summary">
+                    <div class="order-discount">本单已优惠¥29.1（含神券¥5）</div>
+                    <div class="order-fee">配送费¥4 打包费¥2</div>
+                    <div class="order-total"><small>¥</small>46.9</div>
+                  </div>
+                </section>
+                <section class="assist-pay-card">
+                  <div class="assist-title">需付款</div>
+                  <div class="assist-amount"><small>¥</small><span class="assist-amount-value">46.90</span></div>
+                  <div class="assist-countdown">支付剩余时间 <b>00</b>:<b>14</b>:<b>57</b></div>
+                  <div class="assist-notice">
+                    <div class="assist-notice-title">付款须知</div>
+                    <div>1.代付订单创建成功后15分钟内未付款，订单会自动取消，你可以重新下单。</div>
+                    <div>2.当代付订单退款成功后，实付金额将原路退还代付人。</div>
+                  </div>
+                  <button class="assist-self" type="button">自己付款 〉</button>
+                </section>
+                <section class="pay-card">
+                  <div class="pay-head"><div class="pay-head-title">订单</div></div>
+                  <div class="pay-summary">
+                    <div class="pay-time">交易剩余时间 14:57</div>
+                    <div class="pay-amount"><small>¥</small><span class="pay-amount-value">46.90</span></div>
+                    <div class="pay-meta"><span class="pay-store-name">潮粥荟</span>　订单详情 〉</div>
+                  </div>
+                  <div class="pay-methods">
+                    <div class="pay-method is-selected" data-pay-method="微信支付"><img class="pay-icon" src="assets/icon-wechat-pay-crop.png" alt="微信支付"><span>微信支付</span><span class="method-check"></span></div>
+                    <div class="pay-method" data-pay-method="支付宝支付"><img class="pay-icon" src="assets/icon-alipay-crop.png" alt="支付宝支付"><span>支付宝支付</span><span class="method-check"></span></div>
+                  </div>
+                </section>
+              </div>
+            </div>
+            <div class="bottom-controls">
+              <div class="recommendation-actions">
+                <div class="choice-bar"><button class="active">选第一道</button><button>选第二道</button><button>选第三道</button></div>
+                <div class="call-actions"><button class="control-btn hangup-btn">挂断通话</button><button class="control-btn shuffle-btn">换一换</button></div>
+              </div>
+              <div class="order-actions">
+                <div class="order-action-row"><button class="order-btn cancel" type="button">取消订单</button><button class="order-btn" type="button">找人付</button><button class="order-btn pay" type="button">立即支付</button></div>
+                <button class="control-btn hangup-btn order-hangup" type="button">挂断电话</button>
+              </div>
+              <div class="detail-actions"><button class="detail-home-btn" type="button">返回首页</button></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="concept" data-view-direction="vertical">
+        <div class="phone">
+          <div class="screen">
+            <div class="status">
+              <span>14:40</span>
+              <div class="status-right"><span class="signal"><i></i><i></i><i></i><i></i></span><span>5G</span><span class="battery"></span></div>
+            </div>
+            <div class="top">
+              <div class="nav"><div class="nav-title">语音点餐</div><button class="mute-btn" type="button">静音</button></div>
+            </div>
+            <div class="body">
+              <div class="talk" data-full-text="给您推荐第一道鲜虾干贝粥单人套餐，潮粥荟做的，粥底鲜香，配流沙包和凉菜，15分钟送达。想吃就选第一道；也可以切到第二道、第三道，或者点换一换。"><span class="talk-text"></span></div>
+              <div class="recommendation-view y-scroll">
+                <section class="card decision-card has-card-rank">
+                  <span class="rank-badge card-rank">1</span>
+                  <div class="decision-top">
+                    <div class="list-img-wrap"><img src="assets/dish-shrimp-scallop-congee-hifi.png" alt="鲜虾干贝粥单人套餐"></div>
+                    <div class="decision-main-row">
+                      <div class="list-title">鲜虾干贝粥单人套餐</div>
+                    </div>
+                  </div>
+                  <div class="merchant-chip-row"><span class="merchant-chip">潮粥荟</span></div>
+                  <div class="full-reason">“粥底鲜香，配流沙包和凉菜，吃起来稳妥。”</div>
+                  <div class="metric-row">
+                    <div class="metric"><b>必点榜</b></div>
+                    <div class="metric"><b>月售400+</b></div>
+                    <div class="metric"><b>免配送费</b></div>
+                    <div class="metric"><b>15分钟</b></div>
+                  </div>
+                  <div class="price-block"><span class="price">¥40.9</span><span class="save">立省29.1元</span></div>
+                </section>
+                <section class="card decision-card has-card-rank">
+                  <span class="rank-badge card-rank">2</span>
+                  <div class="decision-top">
+                    <div class="list-img-wrap"><img src="assets/dish-tofu-soup-set-hifi.png" alt="嫩豆腐汤套餐"></div>
+                    <div class="decision-main-row">
+                      <div class="list-title">嫩豆腐汤套餐</div>
+                    </div>
+                  </div>
+                  <div class="merchant-chip-row"><span class="merchant-chip">三泉冷面</span></div>
+                  <div class="full-reason">“汤饭搭配，有热汤有主食，吃着省心。”</div>
+                  <div class="metric-row">
+                    <div class="metric"><b>必点榜</b></div>
+                    <div class="metric"><b>月售800+</b></div>
+                    <div class="metric"><b>免配送费</b></div>
+                    <div class="metric"><b>28分钟</b></div>
+                  </div>
+                  <div class="price-block"><span class="price">¥37.9</span><span class="save">省15.1元</span></div>
+                </section>
+                <section class="card decision-card has-card-rank">
+                  <span class="rank-badge card-rank">3</span>
+                  <div class="decision-top">
+                    <div class="list-img-wrap"><img src="assets/dish-sour-fish-set-hifi.png" alt="野果酸汤鱼套餐"></div>
+                    <div class="decision-main-row">
+                      <div class="list-title">野果酸汤鱼套餐</div>
+                    </div>
+                  </div>
+                  <div class="merchant-chip-row"><span class="merchant-chip">云海肴云南菜</span></div>
+                  <div class="full-reason">“酸汤开胃，鱼肉清爽，最近复购不错。”</div>
+                  <div class="metric-row">
+                    <div class="metric"><b>复购第3名</b></div>
+                    <div class="metric"><b>月售1000+</b></div>
+                    <div class="metric"><b>配送0.4元</b></div>
+                    <div class="metric"><b>28分钟</b></div>
+                  </div>
+                  <div class="price-block"><span class="price">¥26.9</span><span class="save">低至5.8折</span></div>
+                </section>
+                <section class="card guess-card">
+                  <div class="guess-mini-list">
+                    <div class="guess-mini-card"><span class="guess-mini-rank">1</span><div class="guess-mini-img"><img src="assets/dish-chili-pork-hifi.png" alt="辣椒炒肉"></div><div class="guess-mini-content"><div class="guess-mini-name">辣椒炒肉</div><div class="guess-mini-attrs"><div class="guess-mini-attr"><div class="guess-mini-attr-label">口感</div><div class="guess-mini-attr-value">焦香</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">做法</div><div class="guess-mini-attr-value">爆炒</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">食材</div><div class="guess-mini-attr-value">猪肉</div></div></div></div></div>
+                    <div class="guess-mini-card"><span class="guess-mini-rank">2</span><div class="guess-mini-img"><img src="assets/dish-spicy-chicken-hifi.png" alt="辣子鸡"></div><div class="guess-mini-content"><div class="guess-mini-name">辣子鸡</div><div class="guess-mini-attrs"><div class="guess-mini-attr"><div class="guess-mini-attr-label">口感</div><div class="guess-mini-attr-value">酥麻</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">做法</div><div class="guess-mini-attr-value">干煸</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">食材</div><div class="guess-mini-attr-value">鸡肉</div></div></div></div></div>
+                    <div class="guess-mini-card"><span class="guess-mini-rank">3</span><div class="guess-mini-img"><img src="assets/dish-boiled-beef-hifi.png" alt="水煮牛肉"></div><div class="guess-mini-content"><div class="guess-mini-name">水煮牛肉</div><div class="guess-mini-attrs"><div class="guess-mini-attr"><div class="guess-mini-attr-label">口感</div><div class="guess-mini-attr-value">嫩滑</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">做法</div><div class="guess-mini-attr-value">热油浇</div></div><div class="guess-mini-attr"><div class="guess-mini-attr-label">食材</div><div class="guess-mini-attr-value">牛肉</div></div></div></div></div>
+                  </div>
+                </section>
+              </div>
+              <div class="order-view">
+                <section class="order-card">
+                  <div class="order-address order-chevron">来广营乡创远路34号融新科技中心FG中间南侧取餐柜<small>木木女士 17600246867</small></div>
+                  <div class="order-time order-chevron">预计<span>16:00-16:30</span>送达</div>
+                  <div class="order-divider"></div>
+                  <div class="order-store">潮粥荟</div>
+                  <div class="order-item">
+                    <div class="order-item-img"><img src="assets/dish-shrimp-scallop-congee-hifi.png" alt="鲜虾干贝粥单人套餐"></div>
+                    <div>
+                      <div class="order-item-title">鲜虾干贝粥单人套餐</div>
+                      <div class="order-item-options">流沙包，凉菜，默认口味，餐具</div>
+                      <div class="order-item-qty">x1</div>
+                    </div>
+                    <div class="order-item-price">¥40.9</div>
+                  </div>
+                  <div class="order-divider"></div>
+                  <div class="order-summary">
+                    <div class="order-discount">本单已优惠¥29.1（含神券¥5）</div>
+                    <div class="order-fee">配送费¥4 打包费¥2</div>
+                    <div class="order-total"><small>¥</small>46.9</div>
+                  </div>
+                </section>
+                <section class="assist-pay-card">
+                  <div class="assist-title">需付款</div>
+                  <div class="assist-amount"><small>¥</small><span class="assist-amount-value">46.90</span></div>
+                  <div class="assist-countdown">支付剩余时间 <b>00</b>:<b>14</b>:<b>57</b></div>
+                  <div class="assist-notice">
+                    <div class="assist-notice-title">付款须知</div>
+                    <div>1.代付订单创建成功后15分钟内未付款，订单会自动取消，你可以重新下单。</div>
+                    <div>2.当代付订单退款成功后，实付金额将原路退还代付人。</div>
+                  </div>
+                  <button class="assist-self" type="button">自己付款 〉</button>
+                </section>
+                <section class="pay-card">
+                  <div class="pay-head"><div class="pay-head-title">订单</div></div>
+                  <div class="pay-summary">
+                    <div class="pay-time">交易剩余时间 14:57</div>
+                    <div class="pay-amount"><small>¥</small><span class="pay-amount-value">46.90</span></div>
+                    <div class="pay-meta"><span class="pay-store-name">潮粥荟</span>　订单详情 〉</div>
+                  </div>
+                  <div class="pay-methods">
+                    <div class="pay-method is-selected" data-pay-method="微信支付"><img class="pay-icon" src="assets/icon-wechat-pay-crop.png" alt="微信支付"><span>微信支付</span><span class="method-check"></span></div>
+                    <div class="pay-method" data-pay-method="支付宝支付"><img class="pay-icon" src="assets/icon-alipay-crop.png" alt="支付宝支付"><span>支付宝支付</span><span class="method-check"></span></div>
+                  </div>
+                </section>
+              </div>
+            </div>
+            <div class="bottom-controls">
+              <div class="recommendation-actions">
+                <div class="choice-bar"><button class="active">选第一道</button><button>选第二道</button><button>选第三道</button></div>
+                <div class="call-actions"><button class="control-btn hangup-btn">挂断通话</button><button class="control-btn shuffle-btn">换一换</button></div>
+              </div>
+              <div class="order-actions">
+                <div class="order-action-row"><button class="order-btn cancel" type="button">取消订单</button><button class="order-btn" type="button">找人付</button><button class="order-btn pay" type="button">立即支付</button></div>
+                <button class="control-btn hangup-btn order-hangup" type="button">挂断电话</button>
+              </div>
+              <div class="detail-actions"><button class="detail-home-btn" type="button">返回首页</button></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script>
+    const recommendationGroups = [
+      [
+        {
+          name: "鲜虾干贝粥单人套餐",
+          store: "潮粥荟",
+          image: "assets/dish-shrimp-scallop-congee-hifi.png",
+          eta: "15分钟",
+          price: "¥40.9",
+          save: "立省29.1元",
+          reason: "“粥底鲜香，配流沙包和凉菜，吃起来稳妥。”",
+          reasonBare: "粥底鲜香，配流沙包和凉菜",
+          metrics: ["必点榜", "月售400+", "免配送费", "15分钟"],
+          orderOptions: "流沙包，凉菜，默认口味，餐具",
+          discount: "本单已优惠¥29.1（含神券¥5）",
+          fee: "配送费¥4 打包费¥2",
+          total: "46.9"
+        },
+        {
+          name: "嫩豆腐汤套餐",
+          store: "三泉冷面",
+          image: "assets/dish-tofu-soup-set-hifi.png",
+          eta: "28分钟",
+          price: "¥37.9",
+          save: "省15.1元",
+          reason: "“汤饭搭配，有热汤有主食，吃着省心。”",
+          reasonBare: "汤饭搭配，有热汤有主食",
+          metrics: ["必点榜", "月售800+", "免配送费", "28分钟"],
+          orderOptions: "米饭，泡菜，默认辣度，餐具",
+          discount: "本单已优惠¥15.1（含神券¥5）",
+          fee: "配送费¥4 打包费¥1",
+          total: "42.9"
+        },
+        {
+          name: "野果酸汤鱼套餐",
+          store: "云海肴云南菜",
+          image: "assets/dish-sour-fish-set-hifi.png",
+          eta: "28分钟",
+          price: "¥26.9",
+          save: "低至5.8折",
+          reason: "“酸汤开胃，鱼肉清爽，最近复购不错。”",
+          reasonBare: "酸汤开胃，鱼肉清爽，最近复购不错",
+          metrics: ["复购第3名", "月售1000+", "配送0.4元", "28分钟"],
+          orderOptions: "米饭，酸汤，默认辣度，餐具",
+          discount: "本单已优惠¥19.6（含神券¥5）",
+          fee: "配送费¥4 打包费¥1",
+          total: "31.9"
+        }
+      ],
+      [
+        {
+          name: "泡菜炒饭+猪排小份+年糕小份",
+          store: "饭阿姨",
+          image: "assets/dish-kimchi-fried-rice-set.png",
+          eta: "39分钟",
+          price: "¥25",
+          save: "约省11元",
+          reason: "“买过3次，近期100+人下单，80+回头客推荐。”",
+          reasonBare: "泡菜炒饭配猪排和年糕，回头客推荐",
+          metrics: ["月售200+", "配送0.9元", "3.0km", "39分钟"],
+          orderOptions: "泡菜炒饭，猪排小份，年糕小份，餐具",
+          discount: "本单已优惠¥11（含神券¥5）",
+          fee: "配送费¥0.9 打包费¥1",
+          total: "26.9"
+        },
+        {
+          name: "隆江猪脚饭",
+          store: "粤家庄·粤菜小馆",
+          image: "assets/dish-pork-trotter-rice.png",
+          eta: "38分钟",
+          price: "¥26.8",
+          save: "约省14.2元",
+          reason: "“2026年上榜餐厅，店内销量第3名，免配送费。”",
+          reasonBare: "猪脚饭软糯下饭，店内销量第3名",
+          metrics: ["月售300+", "免配送费", "1.4km", "38分钟"],
+          orderOptions: "隆江猪脚饭，卤蛋，青菜，餐具",
+          discount: "本单已优惠¥14.2（含神券¥5）",
+          fee: "免配送费 打包费¥1",
+          total: "27.8"
+        },
+        {
+          name: "小份酸豆角鸡胗+米饭",
+          store: "潭州酒楼·川湘菜",
+          image: "assets/dish-sour-bean-gizzard-rice.png",
+          eta: "36分钟",
+          price: "¥23.8",
+          save: "约省15元",
+          reason: "“复购超85%同款，店内销量第2名，酸辣开胃。”",
+          reasonBare: "酸豆角鸡胗酸辣开胃，复购表现好",
+          metrics: ["月售100+", "配送2.2元", "4.1km", "36分钟"],
+          orderOptions: "酸豆角鸡胗小份，米饭一盒，餐具",
+          discount: "本单已优惠¥15（含神券¥5）",
+          fee: "配送费¥2.2 打包费¥1",
+          total: "27"
+        }
+      ],
+      [
+        {
+          name: "老弄堂葱油拌面",
+          store: "和府捞面",
+          image: "assets/dish-scallion-noodle.png",
+          eta: "27分钟",
+          price: "¥21.9",
+          save: "约省7元",
+          reason: "“最近24小时50+人下单，大牌低价，葱香足。”",
+          reasonBare: "葱油拌面香气足，最近下单多",
+          metrics: ["月售88", "配送0.3元", "3.3km", "27分钟"],
+          orderOptions: "葱油拌面，半颗卤蛋，默认口味，餐具",
+          discount: "本单已优惠¥7（含神券¥5）",
+          fee: "配送费¥0.3 打包费¥1",
+          total: "23.2"
+        },
+        {
+          name: "干炒牛河",
+          store: "云山茶餐厅",
+          image: "assets/dish-beef-chow-fun.png",
+          eta: "27分钟",
+          price: "¥18.8",
+          save: "约省20元",
+          reason: "“最近24小时10+人下单，超值特惠，低于95%同款。”",
+          reasonBare: "干炒牛河镬气足，价格很划算",
+          metrics: ["月售69", "免配送费", "2.5km", "27分钟"],
+          orderOptions: "干炒牛河，默认口味，餐具",
+          discount: "本单已优惠¥20（含神券¥5）",
+          fee: "免配送费 打包费¥1",
+          total: "19.8"
+        },
+        {
+          name: "过油肉炒面",
+          store: "晋味轩刀削面",
+          image: "assets/dish-knife-cut-noodle.png",
+          eta: "29分钟",
+          price: "¥19.8",
+          save: "约省10.7元",
+          reason: "“4人觉得分量足，10+回头客推荐，山西特色。”",
+          reasonBare: "过油肉炒面分量足，回头客推荐",
+          metrics: ["月售92", "配送0.5元", "4.2km", "29分钟"],
+          orderOptions: "过油肉炒面，默认口味，餐具",
+          discount: "本单已优惠¥10.7（含神券¥5）",
+          fee: "配送费¥0.5 打包费¥1",
+          total: "21.3"
+        }
+      ]
+    ];
+
+    const guessItems = [
+      {
+        name: "辣椒炒肉",
+        standardKey: "chiliPork",
+        store: "湘味小馆",
+        image: "assets/dish-chili-pork-hifi.png",
+        eta: "31分钟",
+        price: "¥32.8",
+        save: "香辣下饭",
+        attrs: { taste: "焦香", method: "爆炒", ingredient: "猪肉" },
+        reason: "“青椒香、肉片焦香，适合想吃热炒的时候。”",
+        reasonBare: "青椒香、肉片焦香，适合想吃热炒",
+        metrics: ["热炒推荐", "月售300+", "免配送费", "31分钟"],
+        orderOptions: "辣椒炒肉，米饭一盒，默认辣度，餐具",
+        discount: "本单已优惠¥12（含神券¥5）",
+        fee: "免配送费 打包费¥1",
+        total: "33.8"
+      },
+      {
+        name: "辣子鸡",
+        standardKey: "spicyChicken",
+        store: "川渝小馆",
+        image: "assets/dish-spicy-chicken-hifi.png",
+        eta: "33分钟",
+        price: "¥35.8",
+        save: "酥香麻辣",
+        attrs: { taste: "酥麻", method: "干煸", ingredient: "鸡肉" },
+        reason: "“鸡块酥香，干辣椒和花椒味足，适合重口味。”",
+        reasonBare: "鸡块酥香，干辣椒和花椒味足",
+        metrics: ["麻辣榜", "月售500+", "配送1元", "33分钟"],
+        orderOptions: "辣子鸡，米饭一盒，默认辣度，餐具",
+        discount: "本单已优惠¥13（含神券¥5）",
+        fee: "配送费¥1 打包费¥1",
+        total: "37.8"
+      },
+      {
+        name: "水煮牛肉",
+        standardKey: "boiledBeef",
+        store: "巴蜀饭堂",
+        image: "assets/dish-boiled-beef-hifi.png",
+        eta: "35分钟",
+        price: "¥39.9",
+        save: "热辣有汤",
+        attrs: { taste: "嫩滑", method: "热油浇", ingredient: "牛肉" },
+        reason: "“牛肉嫩，红油香，带热汤，吃起来更过瘾。”",
+        reasonBare: "牛肉嫩，红油香，带热汤",
+        metrics: ["招牌菜", "月售600+", "免配送费", "35分钟"],
+        orderOptions: "水煮牛肉，米饭一盒，默认辣度，餐具",
+        discount: "本单已优惠¥16（含神券¥5）",
+        fee: "免配送费 打包费¥1",
+        total: "40.9"
+      }
+    ];
+
+    const standardDishGroups = {
+      chiliPork: [
+        {
+          name: "农家辣椒炒肉盖饭",
+          store: "湘里小炒",
+          image: "assets/dish-chili-pork-rice-set.png",
+          eta: "26分钟",
+          price: "¥29.8",
+          save: "省8元",
+          reason: "“辣椒炒肉现炒，肉片焦香，配米饭刚好。”",
+          reasonBare: "辣椒炒肉现炒，肉片焦香",
+          metrics: ["月售500+", "免配送费", "2.1km", "26分钟"],
+          orderOptions: "辣椒炒肉盖饭，默认辣度，餐具",
+          discount: "本单已优惠¥8（含神券¥5）",
+          fee: "免配送费 打包费¥1",
+          total: "30.8"
+        },
+        {
+          name: "小炒辣椒炒肉套餐",
+          store: "湘当下饭",
+          image: "assets/dish-chili-pork-combo-rice.png",
+          eta: "31分钟",
+          price: "¥32.8",
+          save: "省12元",
+          reason: "“青椒香、肥瘦搭配，适合想吃家常热炒。”",
+          reasonBare: "青椒香，肥瘦搭配，家常热炒",
+          metrics: ["热炒榜", "月售300+", "1.8km", "31分钟"],
+          orderOptions: "辣椒炒肉，米饭一盒，默认辣度，餐具",
+          discount: "本单已优惠¥12（含神券¥5）",
+          fee: "配送费¥1 打包费¥1",
+          total: "34.8"
+        },
+        {
+          name: "衡阳辣椒炒肉双拼饭",
+          store: "衡味馆",
+          image: "assets/dish-chili-pork-hifi.png",
+          eta: "34分钟",
+          price: "¥35.9",
+          save: "省10元",
+          reason: "“辣椒炒肉加时蔬，口味更均衡，分量足。”",
+          reasonBare: "辣椒炒肉加时蔬，分量足",
+          metrics: ["分量足", "月售200+", "2.7km", "34分钟"],
+          orderOptions: "辣椒炒肉，时蔬，米饭一盒，餐具",
+          discount: "本单已优惠¥10（含神券¥5）",
+          fee: "配送费¥2 打包费¥1",
+          total: "38.9"
+        }
+      ],
+      spicyChicken: [
+        {
+          name: "重庆辣子鸡小份套餐",
+          store: "川渝小馆",
+          image: "assets/dish-spicy-chicken-small-set.png",
+          eta: "29分钟",
+          price: "¥34.8",
+          save: "省9元",
+          reason: "“鸡块酥香，干辣椒够味，小份不浪费。”",
+          reasonBare: "鸡块酥香，干辣椒够味",
+          metrics: ["麻辣榜", "月售400+", "2.4km", "29分钟"],
+          orderOptions: "辣子鸡小份，米饭一盒，默认辣度，餐具",
+          discount: "本单已优惠¥9（含神券¥5）",
+          fee: "配送费¥1 打包费¥1",
+          total: "36.8"
+        },
+        {
+          name: "歌乐山辣子鸡盖饭",
+          store: "巴蜀饭堂",
+          image: "assets/dish-spicy-chicken-rice-bowl.png",
+          eta: "32分钟",
+          price: "¥31.9",
+          save: "省7元",
+          reason: "“辣子鸡配米饭，香辣下饭，午餐更省心。”",
+          reasonBare: "辣子鸡配米饭，香辣下饭",
+          metrics: ["回头客多", "月售350+", "3.0km", "32分钟"],
+          orderOptions: "辣子鸡盖饭，默认辣度，餐具",
+          discount: "本单已优惠¥7（含神券¥5）",
+          fee: "配送费¥1 打包费¥1",
+          total: "33.9"
+        },
+        {
+          name: "干香辣子鸡双人小炒",
+          store: "山城小炒",
+          image: "assets/dish-spicy-chicken-hifi.png",
+          eta: "36分钟",
+          price: "¥42.8",
+          save: "省15元",
+          reason: "“分量更足，适合想多吃几口麻辣香的。”",
+          reasonBare: "分量更足，麻辣香明显",
+          metrics: ["招牌菜", "月售180+", "2.8km", "36分钟"],
+          orderOptions: "辣子鸡，米饭一盒，默认辣度，餐具",
+          discount: "本单已优惠¥15（含神券¥5）",
+          fee: "配送费¥2 打包费¥1",
+          total: "45.8"
+        }
+      ],
+      boiledBeef: [
+        {
+          name: "水煮牛肉米饭套餐",
+          store: "巴蜀饭堂",
+          image: "assets/dish-boiled-beef-rice-set.png",
+          eta: "30分钟",
+          price: "¥39.9",
+          save: "省16元",
+          reason: "“牛肉嫩，红油香，带热汤，适合想吃重口味。”",
+          reasonBare: "牛肉嫩，红油香，带热汤",
+          metrics: ["招牌菜", "月售600+", "免配送费", "30分钟"],
+          orderOptions: "水煮牛肉，米饭一盒，默认辣度，餐具",
+          discount: "本单已优惠¥16（含神券¥5）",
+          fee: "免配送费 打包费¥1",
+          total: "40.9"
+        },
+        {
+          name: "川味水煮牛肉单人餐",
+          store: "蜀香厨房",
+          image: "assets/dish-boiled-beef-large-bowl.png",
+          eta: "33分钟",
+          price: "¥36.8",
+          save: "省12元",
+          reason: "“豆芽垫底，汤汁热辣，单人餐分量合适。”",
+          reasonBare: "豆芽垫底，汤汁热辣",
+          metrics: ["热销款", "月售420+", "2.2km", "33分钟"],
+          orderOptions: "水煮牛肉，米饭一盒，默认辣度，餐具",
+          discount: "本单已优惠¥12（含神券¥5）",
+          fee: "配送费¥1 打包费¥1",
+          total: "38.8"
+        },
+        {
+          name: "麻辣水煮牛肉加量版",
+          store: "川府家常菜",
+          image: "assets/dish-boiled-beef-hifi.png",
+          eta: "37分钟",
+          price: "¥45.9",
+          save: "省18元",
+          reason: "“牛肉加量，辣香更足，适合胃口好的时候。”",
+          reasonBare: "牛肉加量，辣香更足",
+          metrics: ["加量版", "月售260+", "3.4km", "37分钟"],
+          orderOptions: "水煮牛肉加量，米饭一盒，餐具",
+          discount: "本单已优惠¥18（含神券¥5）",
+          fee: "配送费¥2 打包费¥1",
+          total: "48.9"
+        }
+      ]
+    };
+
+    let activeGroupIndex = 0;
+    let shuffleClickCount = 0;
+    let isGuessMode = false;
+    let activeItems = recommendationGroups[0];
+    let activeStandardItem = null;
+    let activeSeniorScheme = "scheme-3";
+    let currentOrderItem = null;
+    let programmaticScrollTimer = null;
+    let observedHeroIndex = 0;
+    let speechEnabled = false;
+    let speechMuted = false;
+    let lastSpokenText = "";
+
+    const addressOptions = [
+      {
+        tag: "家",
+        title: "南湖东园二区-201号楼-3单元",
+        person: "杜 先生 188****0000"
+      },
+      {
+        tag: "外卖柜",
+        title: "美团-融新科技中心AB座中间外卖柜",
+        person: "杜 先生 188****0000"
+      },
+      {
+        tag: "",
+        title: "美团-融新科技中心B座一楼大厅餐桌",
+        person: "杜 先生 188****0000"
+      },
+      {
+        tag: "",
+        title: "美团-融新科技中心B座一楼大厅餐桌",
+        person: "杜 先生 188****0000"
+      },
+      {
+        tag: "",
+        title: "美团-融新科技中心B座一楼大厅餐桌",
+        person: "杜 先生 188****0000"
+      },
+      {
+        tag: "",
+        title: "美团-融新科技中心B座一楼大厅餐桌",
+        person: "杜 先生 188****0000"
+      }
+    ];
+
+    const timeOptions = [
+      { date: "今天（周三）", times: ["立即送出（配送约¥1.0）", "16:00-16:30（配送约¥1.0）", "16:30-17:00（配送约¥1.0）"] },
+      { date: "明天（周四）", times: ["20:00-20:40（配送约¥1.0）", "20:40-21:00（配送约¥1.0）", "21:00-21:20（配送约¥1.0）", "21:20-21:40（配送约¥1.0）"] },
+      { date: "3月21日（周五）", times: ["20:40-21:00（配送约¥1.0）", "21:00-21:20（配送约¥1.0）", "21:20-21:40（配送约¥1.0）"] }
+    ];
+
+    let selectedAddressIndex = 0;
+    let selectedDateIndex = 0;
+    let selectedTimeIndex = 1;
+
+    function talkFor(item, index = 0) {
+      const labels = ["第一道", "第二道", "第三道"];
+      const slideDirectionText = document.querySelector(".board")?.classList.contains("direction-vertical") ? "上下滑动" : "左右滑动";
+      return `给您推荐${labels[index]}${item.name}，来自${item.store}，${item.reasonBare}，${item.eta}送达。不喜欢也可以${slideDirectionText}切到其他菜，或者点换一换。`;
+    }
+
+    function guessTalkFor(items) {
+      return `您还没有找到想吃的吗？我根据您的口味，为您推荐几个您可能喜欢的菜：${items.map((item) => item.name).join("、")}。想吃哪个就选哪个，都不喜欢的话也可以换一换。`;
+    }
+
+    function standardTalkFor(item) {
+      return `猜你想吃${item.name}，为你推荐以下代表菜${item.name}。我给您找了三家含有${item.name}的商品，您可以继续选第一道、第二道或第三道。`;
+    }
+
+    function standardChoiceTalkFor(standardItem, item, index = 0) {
+      const labels = ["第一道", "第二道", "第三道"];
+      return `好的，我为您选择了三款${standardItem.name}，${labels[index]}${item.name}，${item.store}做的，${item.reasonBare}，${item.eta}送达。想吃就选${labels[index]}；也可以切到其他菜，或者点换一换。`;
+    }
+
+    function orderTalkFor(item) {
+      return `好的，已为您选择${item.name}，该套餐的规格已帮您选好，并已为您选好餐具。请您确认地址和送达时间，需要修改的话可以点击地址或者送达时间进行修改。确认没问题后可以选择立即支付或找人付，也可以取消订单重新选择想吃的菜。`;
+    }
+
+    function moneyWithTwoDecimals(value) {
+      const number = Number.parseFloat(String(value).replace(/[^\d.]/g, ""));
+      if (Number.isNaN(number)) return String(value);
+      return number.toFixed(2);
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function speakText(text) {
+      lastSpokenText = text;
+      if (!speechEnabled || speechMuted || !("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "zh-CN";
+      utterance.rate = 0.92;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function setMuted(nextMuted) {
+      speechMuted = nextMuted;
+      document.querySelectorAll(".mute-btn").forEach((button) => {
+        button.classList.toggle("is-muted", speechMuted);
+        button.textContent = speechMuted ? "已静音" : "静音";
+      });
+      if (speechMuted) {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        return;
+      }
+      if (lastSpokenText) speakText(lastSpokenText);
+    }
+
+    function speakForTalk(talk, text) {
+      const concept = talk.closest(".concept");
+      if (concept && getComputedStyle(concept).display === "none") return;
+      speakText(text);
+    }
+
+    function typeTalk(talk, text, options = {}) {
+      if (talk.typeTimer) {
+        clearTimeout(talk.typeTimer);
+      }
+
+      const wasConversation = talk.classList.contains("conversation");
+      talk.classList.remove("conversation");
+      let target = talk.querySelector(".talk-text");
+      if (wasConversation || !target || target.parentElement !== talk) {
+        talk.innerHTML = '<span class="talk-text"></span>';
+        target = talk.querySelector(".talk-text");
+      }
+      const immediate = options.immediate === true;
+
+      talk.dataset.fullText = text;
+      talk.classList.remove("done");
+      target.textContent = "";
+      talk.scrollTop = 0;
+      speakForTalk(talk, text);
+
+      if (immediate) {
+        target.textContent = text;
+        talk.classList.add("done");
+        return;
+      }
+
+      let index = 0;
+      const step = () => {
+        index += 1;
+        target.textContent = text.slice(0, index);
+        if (index < text.length) {
+          talk.typeTimer = setTimeout(step, 18);
+          return;
+        }
+        talk.classList.add("done");
+      };
+
+      talk.typeTimer = setTimeout(step, 120);
+    }
+
+    function typeUserAiConversation(talk, userText, aiText, options = {}) {
+      const immediate = options.immediate === true;
+
+      if (talk.typeTimer) {
+        clearTimeout(talk.typeTimer);
+      }
+
+      talk.classList.add("conversation");
+      talk.classList.remove("done");
+      talk.dataset.fullText = `${userText}\n${aiText}`;
+      talk.innerHTML = `
+        <div class="talk-message user">${escapeHtml(userText)}</div>
+        <div class="talk-message ai"><span class="talk-text"></span></div>
+      `;
+      speakForTalk(talk, aiText);
+
+      const target = talk.querySelector(".talk-text");
+
+      if (immediate) {
+        target.textContent = aiText;
+        talk.classList.add("done");
+        talk.scrollTop = talk.scrollHeight;
+        return;
+      }
+
+      let index = 0;
+      const step = () => {
+        index += 1;
+        target.textContent = aiText.slice(0, index);
+        talk.scrollTop = talk.scrollHeight;
+        if (index < aiText.length) {
+          talk.typeTimer = setTimeout(step, 18);
+          return;
+        }
+        talk.classList.add("done");
+      };
+
+      talk.typeTimer = setTimeout(step, 120);
+    }
+
+    function typeOrderConversation(talk, item, options = {}) {
+      typeUserAiConversation(talk, `我就吃${item.name}吧`, orderTalkFor(item), options);
+    }
+
+    function sayUserAction(userText, aiText) {
+      document.querySelectorAll(".talk").forEach((talk) => {
+        typeUserAiConversation(talk, userText, aiText);
+      });
+    }
+
+    function syncPaymentSummary(item = currentOrderItem) {
+      if (!item) return;
+      document.querySelectorAll(".assist-amount-value, .pay-amount-value").forEach((node) => {
+        node.textContent = moneyWithTwoDecimals(item.total);
+      });
+      document.querySelectorAll(".pay-store-name").forEach((node) => {
+        node.textContent = item.store;
+      });
+    }
+
+    function setOrderSubView(type) {
+      syncPaymentSummary();
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-detail");
+        screen.classList.remove("is-waimai-home");
+        screen.classList.remove("is-senior-home");
+        screen.classList.toggle("is-assist-pay", type === "assist");
+        screen.classList.toggle("is-pay-card", type === "pay");
+      });
+    }
+
+    function resetOrderButtons() {
+      document.querySelectorAll(".order-action-row").forEach((row) => {
+        const buttons = row.querySelectorAll(".order-btn");
+        if (buttons[0]) buttons[0].textContent = "取消订单";
+        if (buttons[1]) buttons[1].textContent = "找人付";
+        if (buttons[2]) buttons[2].textContent = "立即支付";
+      });
+    }
+
+    function addressLineText(address) {
+      return `${address.title}<small>${address.person.replace(/\s+/g, " ")}</small>`;
+    }
+
+    function renderAddressSheet(screen) {
+      return `
+        <div class="sheet address-sheet" data-sheet="address">
+          <h3 class="sheet-title">请选择地址</h3>
+          <button class="sheet-close" type="button" aria-label="关闭">×</button>
+          <div class="address-list">
+            ${addressOptions.map((address, index) => `
+              <div class="address-row${index === selectedAddressIndex ? " is-selected" : ""}" data-address-index="${index}">
+                <span class="radio-dot"></span>
+                <div class="address-main">
+                  <div class="address-title">${address.tag ? `<span class="address-tag">${address.tag}</span>` : ""}<span>${address.title}</span></div>
+                  <div class="address-person">${address.person}</div>
+                </div>
+                <button class="address-edit" type="button" aria-label="编辑地址"></button>
+              </div>
+            `).join("")}
+          </div>
+          <button class="add-address-btn" type="button">新增收货地址</button>
+          <span class="sheet-home-indicator"></span>
+        </div>
+      `;
+    }
+
+    function renderTimeSheet(screen) {
+      const activeDate = timeOptions[selectedDateIndex];
+      return `
+        <div class="sheet time-sheet" data-sheet="time">
+          <h3 class="sheet-title">选择预计送达时间</h3>
+          <button class="sheet-close" type="button" aria-label="关闭">×</button>
+          <div class="time-tabs">
+            <div class="date-col">
+              ${timeOptions.map((item, index) => `<div class="date-tab${index === selectedDateIndex ? " is-selected" : ""}" data-date-index="${index}">${item.date}</div>`).join("")}
+            </div>
+            <div class="time-col">
+              <div class="time-list">
+                ${activeDate.times.map((time, index) => `<div class="time-row${index === selectedTimeIndex ? " is-selected" : ""}" data-time-index="${index}"><span>${time}</span><span class="time-check"></span></div>`).join("")}
+              </div>
+            </div>
+          </div>
+          <span class="sheet-home-indicator"></span>
+        </div>
+      `;
+    }
+
+    function openSheet(screen, type) {
+      let layer = screen.querySelector(".sheet-layer");
+      if (!layer) {
+        layer = document.createElement("div");
+        layer.className = "sheet-layer";
+        screen.appendChild(layer);
+      }
+      layer.innerHTML = type === "address" ? renderAddressSheet(screen) : renderTimeSheet(screen);
+      screen.classList.add("is-sheet-open");
+    }
+
+    function closeSheet(screen) {
+      screen.classList.remove("is-sheet-open");
+    }
+
+    function updateAddress(index) {
+      selectedAddressIndex = index;
+      const address = addressOptions[index];
+      document.querySelectorAll(".order-address").forEach((node) => {
+        node.innerHTML = addressLineText(address);
+      });
+      sayUserAction(`我已选择${address.title}`, `好的，收货地址已改为${address.title}。请继续确认预计送达时间和订单金额。`);
+    }
+
+    function updateTime(dateIndex, timeIndex) {
+      selectedDateIndex = dateIndex;
+      selectedTimeIndex = timeIndex;
+      const value = timeOptions[dateIndex].times[timeIndex].replace(/（.*$/, "");
+      document.querySelectorAll(".order-time span").forEach((node) => {
+        node.textContent = value;
+      });
+      sayUserAction(`我已选择${value}送达`, `好的，预计送达时间已改为${value}。请继续确认订单信息，确认无误后可以立即支付或找人付。`);
+    }
+
+    function setImage(card, item) {
+      const image = card.querySelector("img");
+      if (!image) return;
+      image.src = item.image;
+      image.alt = item.name;
+    }
+
+    function setRank(card, index) {
+      const rank = card.querySelector(".rank-badge");
+      if (rank) rank.textContent = String(index + 1);
+    }
+
+    function setStoreLine(card, item, withPrefix) {
+      const storeLine = card.querySelector(".store-line");
+      if (!storeLine) return;
+      const spans = storeLine.querySelectorAll("span");
+      if (spans[0]) spans[0].textContent = item.store;
+      const eta = storeLine.querySelector(".eta");
+      if (eta) eta.textContent = `${withPrefix ? "预计" : ""}${item.eta}送达`;
+    }
+
+    function setPrice(card, item) {
+      const price = card.querySelector(".price");
+      const save = card.querySelector(".save");
+      if (price) price.textContent = item.price;
+      if (save) save.textContent = item.save;
+    }
+
+    function updateHeroCard(card, item, index) {
+      setRank(card, index);
+      setImage(card, item);
+      const title = card.querySelector(".food-title");
+      if (title) title.textContent = item.name;
+      setStoreLine(card, item, true);
+      const reason = card.querySelector(".reason");
+      if (reason) reason.textContent = item.reason;
+      setPrice(card, item);
+    }
+
+    function updateListCard(card, item, index) {
+      setRank(card, index);
+      setImage(card, item);
+      const title = card.querySelector(".list-title");
+      if (title) title.textContent = item.name;
+      setStoreLine(card, item, false);
+      const reason = card.querySelector(".reason");
+      if (reason) reason.textContent = item.reason;
+      setPrice(card, item);
+    }
+
+    function updateDecisionCard(card, item, index) {
+      setRank(card, index);
+      setImage(card, item);
+      const title = card.querySelector(".list-title");
+      const reason = card.querySelector(".full-reason");
+      const merchant = card.querySelector(".merchant-chip");
+      if (title) title.textContent = item.name;
+      if (reason) reason.textContent = item.reason;
+      if (merchant) merchant.textContent = item.store;
+      setPrice(card, item);
+      card.querySelectorAll(".metric b").forEach((node, metricIndex) => {
+        node.textContent = item.metrics[metricIndex] || "";
+      });
+    }
+
+    function updateGuessCards(items) {
+      document.querySelectorAll(".guess-card").forEach((card) => {
+        card.querySelectorAll(".guess-mini-card").forEach((miniCard, index) => {
+          const item = items[index];
+          if (!item) return;
+          const image = miniCard.querySelector("img");
+          const rank = miniCard.querySelector(".guess-mini-rank");
+          const name = miniCard.querySelector(".guess-mini-name");
+          const values = miniCard.querySelectorAll(".guess-mini-attr-value");
+          if (image) {
+            image.src = item.image;
+            image.alt = item.name;
+          }
+          if (rank) rank.textContent = String(index + 1);
+          if (name) name.textContent = item.name;
+          const attrValues = [item.attrs.taste, item.attrs.method, item.attrs.ingredient];
+          values.forEach((value, valueIndex) => {
+            value.textContent = attrValues[valueIndex] || "";
+          });
+        });
+      });
+    }
+
+    function clearChoiceHighlight() {
+      document.querySelectorAll(".choice-bar button").forEach((button) => {
+        button.classList.remove("active");
+      });
+    }
+
+    function updateChoiceHighlight(index) {
+      document.querySelectorAll(".choice-bar").forEach((bar) => {
+        bar.querySelectorAll("button").forEach((button, buttonIndex) => {
+          button.classList.toggle("active", buttonIndex === index);
+        });
+      });
+    }
+
+    function announceItem(index, options = {}) {
+      const item = activeItems[index];
+      if (!item || isGuessMode) return;
+      observedHeroIndex = index;
+      updateChoiceHighlight(index);
+      const text = activeStandardItem ? standardChoiceTalkFor(activeStandardItem, item, index) : talkFor(item, index);
+      document.querySelectorAll(".talk").forEach((talk) => {
+        typeTalk(talk, text, options);
+      });
+    }
+
+    function renderOrder(item, index) {
+      currentOrderItem = item;
+      setOrderSubView(null);
+      resetOrderButtons();
+      document.querySelectorAll(".order-card").forEach((card) => {
+        const store = card.querySelector(".order-store");
+        const image = card.querySelector(".order-item-img img");
+        const title = card.querySelector(".order-item-title");
+        const options = card.querySelector(".order-item-options");
+        const price = card.querySelector(".order-item-price");
+        const discount = card.querySelector(".order-discount");
+        const fee = card.querySelector(".order-fee");
+        const total = card.querySelector(".order-total");
+
+        if (store) store.textContent = item.store;
+        if (image) {
+          image.src = item.image;
+          image.alt = item.name;
+        }
+        if (title) title.textContent = item.name;
+        if (options) options.textContent = item.orderOptions;
+        if (price) price.textContent = item.price;
+        if (discount) discount.textContent = item.discount;
+        if (fee) fee.textContent = item.fee;
+        if (total) total.innerHTML = `<small>¥</small>${item.total}`;
+      });
+
+      syncPaymentSummary(item);
+
+      document.querySelectorAll(".talk").forEach((talk) => {
+        typeOrderConversation(talk, item);
+      });
+    }
+
+    function waimaiHomeMarkup() {
+      return `
+        <div class="wm-header">
+          <div class="wm-status"><span>9:41</span><span class="wm-status-icons"><span class="wm-status-signal"><i></i><i></i><i></i><i></i></span><span>⌁</span><span class="wm-battery"></span></span></div>
+          <div class="wm-loc-row">
+            <div class="wm-mode"><strong>首页</strong><span>自取<em>顺路取</em></span></div>
+            <div class="wm-address">⌖ 融新科技中心F座1层 ›</div>
+            <div class="wm-msg">•••</div>
+          </div>
+          <div class="wm-search"><span class="wm-search-placeholder">⌕ 搜索默认词</span><button class="wm-search-btn" type="button">搜索</button></div>
+          <div class="wm-kingkong">
+            <div class="wm-kk-item"><img class="wm-kk-icon" src="assets/wm-kk-1.png" alt=""><div>美食</div></div>
+            <div class="wm-kk-item"><img class="wm-kk-icon" src="assets/wm-kk-2.png" alt=""><div>甜点饮品</div></div>
+            <div class="wm-kk-item"><img class="wm-kk-icon" src="assets/wm-kk-3.png" alt=""><div>超市便利</div></div>
+            <div class="wm-kk-item"><img class="wm-kk-icon" src="assets/wm-kk-4.png" alt=""><div>拼好饭</div></div>
+            <div class="wm-kk-item"><img class="wm-kk-icon" src="assets/wm-kk-5.png" alt=""><div>美团买药</div></div>
+            <div class="wm-kk-item"><img class="wm-kk-icon" src="assets/wm-kk-3.png" alt=""><div>蔬菜</div></div>
+          </div>
+        </div>
+        <div class="wm-page-dot"></div>
+        <section class="wm-elder-entry" data-page-name="外卖首页">
+          <div class="wm-elder-icon">点</div>
+          <div>
+            <div class="wm-elder-title">长辈点餐<span>语音点餐</span></div>
+            <div class="wm-elder-sub">字更大，菜品、价格更清晰</div>
+          </div>
+          <button class="wm-use-btn" type="button">去使用</button>
+        </section>
+        <section class="wm-deals">
+          <div class="wm-deal-card">
+            <div class="wm-deal-head">神抢手<span>9.9券今晚过期</span></div>
+            <div class="wm-deal-item"><img src="assets/wm-deal-stonepot.png" alt="牛喜韩石锅"><div><div class="wm-deal-name">牛喜韩石锅</div><div class="wm-deal-sub">时蔬石锅拌饭</div><div class="wm-deal-price">¥24.3 <small>¥58.9</small></div></div></div>
+            <div class="wm-deal-item"><img src="assets/wm-deal-sandwich.png" alt="蔓味轻食"><div><div class="wm-deal-name">蔓味轻食</div><div class="wm-deal-sub">全麦香煎鸡胸</div><div class="wm-deal-price">¥18.9 <small>省¥29</small></div></div></div>
+          </div>
+          <div class="wm-deal-card">
+            <div class="wm-deal-head">拼好饭<span>爆品一口价</span></div>
+            <div class="wm-deal-item"><img src="assets/wm-deal-kfc.png" alt="肯德基"><div><div class="wm-deal-name">肯德基</div><div class="wm-deal-sub">烤鸡腿堡+鸡</div><div class="wm-deal-price">¥9.8 <small>补10元</small></div></div></div>
+            <div class="wm-deal-item"><img src="assets/wm-deal-tea.png" alt="喜茶"><div><div class="wm-deal-name">喜茶</div><div class="wm-deal-sub">芝芝莓奶茶</div><div class="wm-deal-price">¥10.3 <small>补10元</small></div></div></div>
+          </div>
+        </section>
+        <div class="wm-filter-row"><span>神券商家</span><span>减配送费</span><span>30分钟内</span><span>品牌商家</span><span>☰</span></div>
+        <section class="wm-merchant-list">
+          <article class="wm-merchant-card">
+            <div class="wm-shop-logo"><img src="assets/wm-logo-xibei.png" alt="西贝莜面村"></div>
+            <div class="wm-shop-main">
+              <div class="wm-shop-name">西贝莜面村（望京华彩店）</div>
+              <div class="wm-shop-sale">月售6328　人均¥26</div>
+              <div class="wm-shop-delivery"><span>起送¥20　配送 约¥11.12</span><span>29分钟 2.5km</span></div>
+              <div class="wm-shop-score"><span>4.5分</span><span class="wm-shop-rank">望京火锅口碑榜第1名 ›</span></div>
+              <div class="wm-shop-tags"><span>堂食店 ›</span><span>新客减1</span></div>
+            </div>
+          </article>
+          <article class="wm-merchant-card">
+            <div class="wm-shop-logo blue"><img src="assets/wm-logo-dominos.png" alt="达美乐"></div>
+            <div class="wm-shop-main">
+              <div class="wm-shop-name">达美乐披萨望京店</div>
+              <div class="wm-shop-sale">月售6328　人均¥26</div>
+              <div class="wm-shop-delivery"><span>起送¥20　夜间配送¥11.12</span><span>29分钟 2.5km</span></div>
+              <div class="wm-shop-score"><span>4.9分</span><span class="wm-shop-rank">美团快送</span></div>
+              <div class="wm-shop-tags"><span>品牌</span><span>披萨</span></div>
+            </div>
+          </article>
+        </section>
+        <nav class="wm-bottom-tab">
+          <div class="wm-tab-item active"><span class="wm-tab-icon">⌂</span><span>首页</span></div>
+          <div class="wm-tab-item"><span class="wm-tab-icon">♔</span><span>会员</span></div>
+          <div class="wm-tab-item"><span class="wm-tab-icon">▤</span><span>订单</span></div>
+          <div class="wm-tab-item"><span class="wm-tab-icon">♙</span><span>我的</span></div>
+        </nav>
+      `;
+    }
+
+    function enterWaimaiHome() {
+      speechEnabled = false;
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      syncPageEntry("waimai");
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-ordering", "is-guess", "is-assist-pay", "is-pay-card", "is-detail", "is-senior-home", "is-sheet-open");
+        screen.classList.add("is-waimai-home");
+        let home = screen.querySelector(".waimai-home-view");
+        if (!home) {
+          home = document.createElement("div");
+          home.className = "waimai-home-view";
+          screen.insertBefore(home, screen.firstElementChild);
+        }
+        home.innerHTML = waimaiHomeMarkup();
+        home.scrollTo({ top: 0, behavior: "auto" });
+      });
+    }
+
+    function seniorHomeMarkup(scheme) {
+      const src = `assets/senior-home-${scheme}.png`;
+      return `<img class="senior-home-shot" src="${src}" alt="大字版首页${scheme}"><button class="senior-voice-hotspot" type="button" aria-label="进入语音点餐"></button>`;
+    }
+
+    function syncSeniorSchemeButtons() {
+      document.querySelectorAll("[data-senior-scheme]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.seniorScheme === activeSeniorScheme);
+      });
+    }
+
+    function syncPageEntry(entry) {
+      document.querySelectorAll("[data-page-entry]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.pageEntry === entry);
+      });
+    }
+
+    function enterSeniorHome(scheme = activeSeniorScheme) {
+      speechEnabled = false;
+      if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+      activeSeniorScheme = scheme;
+      syncSeniorSchemeButtons();
+      syncPageEntry("waimai");
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-ordering", "is-guess", "is-assist-pay", "is-pay-card", "is-detail", "is-waimai-home", "is-sheet-open");
+        screen.classList.add("is-senior-home");
+        let home = screen.querySelector(".senior-home-view");
+        if (!home) {
+          home = document.createElement("div");
+          home.className = "senior-home-view";
+          screen.insertBefore(home, screen.firstElementChild);
+        }
+        home.dataset.scheme = scheme;
+        home.innerHTML = seniorHomeMarkup(scheme);
+      });
+    }
+
+    function detailMarkup(item) {
+      const total = moneyWithTwoDecimals(item.total);
+      return `
+        <div class="detail-toolbar"><span class="detail-tool support"></span><span class="detail-tool refresh"></span></div>
+        <section class="detail-eta">
+          <div class="detail-time"><strong>14:55</strong><span>预计送达</span></div>
+          <div class="detail-status-title">商家正在备餐</div>
+        </section>
+        <div class="detail-progress">
+          <span class="progress-dot active">¥</span>
+          <span class="progress-dot active">▰</span>
+          <span class="progress-dot">⚑</span>
+          <span class="progress-dot">✓</span>
+        </div>
+        <section class="detail-map">
+          <span class="map-badge">美团快送</span>
+          <span class="merchant-pin"><img src="${item.image}" alt="${escapeHtml(item.store)}"></span>
+          <div class="map-bubble">餐品制作中，请耐心等待</div>
+          <span class="food-pin"></span>
+          <div class="safety-strip">✚ 放心吃：食品安全、撒漏错送等商品问题保障中</div>
+        </section>
+        <div class="detail-action-pills">
+          <span class="detail-more">更多</span>
+          <button class="detail-pill" type="button">修改地址</button>
+          <button class="detail-pill" type="button">取消订单</button>
+          <button class="detail-pill" type="button">催一下</button>
+          <button class="detail-pill contact" type="button">联系商家</button>
+        </div>
+        <div class="detail-tip">⌕ 不同配送服务有什么差异？ 点击了解 ›</div>
+        <section class="detail-section">
+          <h3>订单信息</h3>
+          <div class="detail-info-row">
+            <span>配送地址</span>
+            <strong>融新科技中心-B座（1楼桌上）<br>黄**(先生) 198****5889</strong>
+            <button class="detail-change-btn" type="button">修改</button>
+          </div>
+          <div class="detail-fold">支付方式/期望时间等⌄</div>
+        </section>
+        <section class="detail-section">
+          <h3>商品费用</h3>
+          <div class="fee-store-row"><span>${escapeHtml(item.store)} ›</span><span class="fan-link">☻ 进商家粉丝群</span></div>
+          <div class="fee-items">
+            <img class="fee-thumb" src="${item.image}" alt="${escapeHtml(item.name)}">
+            <img class="fee-thumb" src="${item.image}" alt="${escapeHtml(item.name)}">
+            <span class="fee-count">共1件</span>
+            <span class="fee-total">合计 ¥ <b>${total}</b></span>
+          </div>
+        </section>
+      `;
+    }
+
+    function enterOrderDetail() {
+      const item = currentOrderItem || activeItems[observedHeroIndex] || activeItems[0];
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-ordering", "is-guess", "is-assist-pay", "is-pay-card", "is-waimai-home", "is-senior-home", "is-sheet-open");
+        screen.classList.add("is-detail");
+        let detail = screen.querySelector(".detail-view");
+        if (!detail) {
+          detail = document.createElement("div");
+          detail.className = "detail-view";
+          screen.insertBefore(detail, screen.querySelector(".bottom-controls"));
+        }
+        detail.innerHTML = detailMarkup(item);
+        detail.scrollTo({ top: 0, behavior: "auto" });
+      });
+    }
+
+    function setChoice(index) {
+      updateChoiceHighlight(index);
+
+      if (isGuessMode) {
+        document.querySelectorAll(".guess-card").forEach((card) => {
+          const scroller = card.closest(".x-scroll, .y-scroll");
+          if (!scroller) return;
+          if (scroller.classList.contains("x-scroll")) {
+            scroller.scrollTo({ left: 0, behavior: "smooth" });
+            return;
+          }
+          scroller.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        return;
+      }
+
+      document.querySelectorAll(".concept").forEach((concept) => {
+        const target = concept.querySelectorAll(".hero-card, .list-card, .decision-card")[index];
+        if (!target) return;
+
+        const xScroller = target.closest(".x-scroll");
+        if (xScroller) {
+          const nextLeft = target.getBoundingClientRect().left - xScroller.getBoundingClientRect().left + xScroller.scrollLeft;
+          if (programmaticScrollTimer) clearTimeout(programmaticScrollTimer);
+          xScroller.dataset.programmaticScroll = "true";
+          xScroller.scrollTo({ left: nextLeft, behavior: "smooth" });
+          programmaticScrollTimer = setTimeout(() => {
+            delete xScroller.dataset.programmaticScroll;
+          }, 520);
+          return;
+        }
+
+        const yScroller = target.closest(".y-scroll");
+        if (yScroller) {
+          const nextTop = target.getBoundingClientRect().top - yScroller.getBoundingClientRect().top + yScroller.scrollTop;
+          if (programmaticScrollTimer) clearTimeout(programmaticScrollTimer);
+          yScroller.dataset.programmaticScroll = "true";
+          yScroller.scrollTo({ top: nextTop, behavior: "smooth" });
+          programmaticScrollTimer = setTimeout(() => {
+            delete yScroller.dataset.programmaticScroll;
+          }, 520);
+        }
+      });
+    }
+
+    function syncHeroFromScroll(scroller) {
+      if (isGuessMode || scroller.dataset.programmaticScroll === "true") return;
+      const cards = [...scroller.querySelectorAll(".hero-card, .decision-card")].filter((card) => getComputedStyle(card).display !== "none");
+      if (!cards.length) return;
+      const scrollerBox = scroller.getBoundingClientRect();
+      let nearestIndex = 0;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      const isVertical = scroller.classList.contains("y-scroll");
+      cards.forEach((card, index) => {
+        const cardBox = card.getBoundingClientRect();
+        const distance = isVertical
+          ? Math.abs(cardBox.top - scrollerBox.top)
+          : Math.abs(cardBox.left - scrollerBox.left);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = index;
+        }
+      });
+      if (nearestIndex === observedHeroIndex) return;
+      announceItem(nearestIndex);
+    }
+
+    function bindHeroScrollSync() {
+      document.querySelectorAll(".x-scroll, .y-scroll").forEach((scroller) => {
+        let timer = null;
+        scroller.addEventListener("scroll", () => {
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(() => syncHeroFromScroll(scroller), 90);
+        }, { passive: true });
+      });
+    }
+
+    function renderGroup(options = {}) {
+      isGuessMode = false;
+      activeStandardItem = null;
+      const items = recommendationGroups[activeGroupIndex];
+      activeItems = items;
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-ordering");
+        screen.classList.remove("is-guess");
+        screen.classList.remove("is-assist-pay");
+        screen.classList.remove("is-pay-card");
+        screen.classList.remove("is-detail");
+        screen.classList.remove("is-waimai-home");
+        screen.classList.remove("is-senior-home");
+      });
+      document.querySelectorAll(".talk").forEach((talk) => {
+        if (options.userText) {
+          typeUserAiConversation(talk, options.userText, talkFor(items[0], 0), options);
+          return;
+        }
+        typeTalk(talk, talkFor(items[0], 0), options);
+      });
+      observedHeroIndex = 0;
+
+      const concepts = document.querySelectorAll(".concept");
+      concepts[0].querySelectorAll(".hero-card").forEach((card, index) => {
+        updateHeroCard(card, items[index], index);
+      });
+      concepts[1].querySelectorAll(".decision-card").forEach((card, index) => {
+        updateDecisionCard(card, items[index], index);
+      });
+      setChoice(0);
+    }
+
+    function renderGuessCard(options = {}) {
+      isGuessMode = true;
+      activeStandardItem = null;
+      activeItems = guessItems;
+      updateGuessCards(guessItems);
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-ordering");
+        screen.classList.add("is-guess");
+        screen.classList.remove("is-assist-pay");
+        screen.classList.remove("is-pay-card");
+        screen.classList.remove("is-detail");
+        screen.classList.remove("is-waimai-home");
+        screen.classList.remove("is-senior-home");
+      });
+      document.querySelectorAll(".talk").forEach((talk) => {
+        if (options.userText) {
+          typeUserAiConversation(talk, options.userText, guessTalkFor(guessItems), options);
+          return;
+        }
+        typeTalk(talk, guessTalkFor(guessItems), options);
+      });
+      clearChoiceHighlight();
+    }
+
+    function renderStandardDishGroup(index, options = {}) {
+      const guessItem = guessItems[index];
+      const items = standardDishGroups[guessItem.standardKey];
+      if (!items) return;
+      isGuessMode = false;
+      activeStandardItem = guessItem;
+      activeItems = items;
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-ordering");
+        screen.classList.remove("is-guess");
+        screen.classList.remove("is-assist-pay");
+        screen.classList.remove("is-pay-card");
+        screen.classList.remove("is-detail");
+        screen.classList.remove("is-waimai-home");
+        screen.classList.remove("is-senior-home");
+      });
+      document.querySelectorAll(".talk").forEach((talk) => {
+        if (options.userText) {
+          typeUserAiConversation(talk, options.userText, standardChoiceTalkFor(guessItem, items[0], 0), options);
+          return;
+        }
+        typeTalk(talk, standardTalkFor(guessItem), options);
+      });
+      observedHeroIndex = 0;
+      const concepts = document.querySelectorAll(".concept");
+      const xScroller = concepts[0].querySelector(".x-scroll");
+      if (xScroller) xScroller.scrollTo({ left: 0, behavior: "auto" });
+      concepts[0].querySelectorAll(".hero-card").forEach((card, cardIndex) => {
+        updateHeroCard(card, items[cardIndex], cardIndex);
+      });
+      concepts[1].querySelectorAll(".decision-card").forEach((card, cardIndex) => {
+        updateDecisionCard(card, items[cardIndex], cardIndex);
+      });
+      setChoice(0);
+    }
+
+    function resetToHome() {
+      speechEnabled = true;
+      syncPageEntry("voice");
+      activeGroupIndex = 0;
+      shuffleClickCount = 0;
+      activeStandardItem = null;
+      setOrderSubView(null);
+      resetOrderButtons();
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.remove("is-detail");
+        screen.classList.remove("is-waimai-home");
+        screen.classList.remove("is-senior-home");
+        screen.classList.remove("is-sheet-open");
+        const sheetLayer = screen.querySelector(".sheet-layer");
+        if (sheetLayer) sheetLayer.innerHTML = "";
+      });
+      renderGroup({ immediate: true });
+      document.querySelectorAll(".x-scroll, .y-scroll, .talk").forEach((node) => {
+        node.scrollTo({ left: 0, top: 0, behavior: "auto" });
+      });
+    }
+
+    function enterOrder(index) {
+      if (isGuessMode) {
+        renderStandardDishGroup(index, { userText: `我想吃${guessItems[index].name}` });
+        return;
+      }
+      const items = activeItems;
+      const item = items[index];
+      setChoice(index);
+      document.querySelectorAll(".screen").forEach((screen) => {
+        screen.classList.add("is-ordering");
+      });
+      renderOrder(item, index);
+    }
+
+    document.querySelectorAll(".choice-bar").forEach((bar) => {
+      bar.querySelectorAll("button").forEach((button, index) => {
+        button.addEventListener("click", () => enterOrder(index));
+      });
+    });
+
+    document.querySelectorAll("[data-version]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const version = button.dataset.version;
+        document.querySelector(".board").classList.toggle("mode-broadcast", version === "broadcast");
+        document.querySelector(".board").classList.toggle("mode-call", version !== "broadcast");
+        document.querySelectorAll("[data-version]").forEach((node) => {
+          node.classList.toggle("active", node === button);
+        });
+        resetToHome();
+      });
+    });
+
+    document.querySelectorAll("[data-direction-option]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const direction = button.dataset.directionOption;
+        document.querySelector(".board").classList.toggle("direction-horizontal", direction === "horizontal");
+        document.querySelector(".board").classList.toggle("direction-vertical", direction === "vertical");
+        document.querySelectorAll("[data-direction-option]").forEach((node) => {
+          node.classList.toggle("active", node === button);
+        });
+        resetToHome();
+      });
+    });
+
+    document.querySelectorAll("[data-page-entry]").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.dataset.pageEntry === "waimai") {
+          enterWaimaiHome();
+          syncPageEntry("waimai");
+          return;
+        }
+        resetToHome();
+      });
+    });
+
+    document.querySelectorAll("[data-senior-scheme]").forEach((button) => {
+      button.addEventListener("click", () => {
+        enterSeniorHome(button.dataset.seniorScheme);
+      });
+    });
+
+    document.querySelectorAll(".shuffle-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        shuffleClickCount += 1;
+        if (shuffleClickCount % 3 === 0) {
+          renderGuessCard({ userText: "换一换" });
+          return;
+        }
+        activeGroupIndex = ((shuffleClickCount - 1) % 2) + 1;
+        renderGroup({ userText: "换一换" });
+      });
+    });
+
+    document.querySelectorAll(".mute-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        setMuted(!speechMuted);
+      });
+    });
+
+    document.querySelectorAll(".screen").forEach((screen) => {
+      screen.addEventListener("click", (event) => {
+        const useVoiceOrder = event.target.closest(".wm-use-btn");
+        if (useVoiceOrder && screen.contains(useVoiceOrder)) {
+          enterSeniorHome("scheme-3");
+          return;
+        }
+
+        const seniorVoice = event.target.closest(".senior-voice-hotspot");
+        if (seniorVoice && screen.contains(seniorVoice)) {
+          resetToHome();
+          return;
+        }
+
+        const assistSelf = event.target.closest(".assist-self");
+        if (assistSelf && screen.contains(assistSelf)) {
+          setOrderSubView("pay");
+          document.querySelectorAll(".order-btn.pay").forEach((button) => {
+            button.textContent = "确认支付";
+          });
+          sayUserAction("我选择自己付款", "好的，已为您切换到支付页面，默认选择微信支付，确认后即可完成交易。");
+          return;
+        }
+
+        const payMethod = event.target.closest(".pay-method");
+        if (payMethod && screen.contains(payMethod)) {
+          document.querySelectorAll(".pay-method").forEach((method) => {
+            method.classList.toggle("is-selected", method.dataset.payMethod === payMethod.dataset.payMethod);
+          });
+          sayUserAction(`我选择${payMethod.dataset.payMethod}`, `好的，已切换为${payMethod.dataset.payMethod}，确认无误后点击确认支付。`);
+          return;
+        }
+
+        const addressTrigger = event.target.closest(".order-address");
+        if (addressTrigger && screen.contains(addressTrigger)) {
+          openSheet(screen, "address");
+          sayUserAction("我想修改收货地址", "好的，请在下方选择新的收货地址。");
+          return;
+        }
+
+        const timeTrigger = event.target.closest(".order-time");
+        if (timeTrigger && screen.contains(timeTrigger)) {
+          openSheet(screen, "time");
+          sayUserAction("我想修改送达时间", "好的，请在下方选择预计送达时间。");
+          return;
+        }
+
+        const layer = event.target.closest(".sheet-layer");
+        if (!layer || !screen.contains(layer)) return;
+
+        if (event.target === layer || event.target.closest(".sheet-close")) {
+          closeSheet(screen);
+          return;
+        }
+
+        if (event.target.closest(".address-edit")) {
+          event.stopPropagation();
+          sayUserAction("我想编辑这个地址", "好的，当前原型先为您保留编辑入口，您也可以直接选择列表中的其它地址。");
+          return;
+        }
+
+        if (event.target.closest(".add-address-btn")) {
+          sayUserAction("我想新增收货地址", "好的，当前原型先为您保留新增入口，您可以继续从列表中选择已有地址。");
+          return;
+        }
+
+        const addressRow = event.target.closest(".address-row");
+        if (addressRow) {
+          updateAddress(Number(addressRow.dataset.addressIndex));
+          closeSheet(screen);
+          return;
+        }
+
+        const dateTab = event.target.closest(".date-tab");
+        if (dateTab) {
+          selectedDateIndex = Number(dateTab.dataset.dateIndex);
+          selectedTimeIndex = 0;
+          layer.innerHTML = renderTimeSheet(screen);
+          sayUserAction(`我想看${timeOptions[selectedDateIndex].date}的送达时间`, `好的，已切换到${timeOptions[selectedDateIndex].date}，请继续选择具体送达时间。`);
+          return;
+        }
+
+        const timeRow = event.target.closest(".time-row");
+        if (timeRow) {
+          updateTime(selectedDateIndex, Number(timeRow.dataset.timeIndex));
+          closeSheet(screen);
+        }
+      });
+    });
+
+    document.querySelectorAll(".order-btn.cancel").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (isGuessMode) {
+          renderGuessCard({ immediate: true });
+          return;
+        }
+        renderGroup({ immediate: true });
+      });
+    });
+
+    document.querySelectorAll(".order-btn:not(.cancel)").forEach((button) => {
+      button.addEventListener("click", () => {
+        const isPay = button.classList.contains("pay");
+        const isAssistSend = !isPay && document.querySelector(".screen.is-assist-pay");
+        const isPayConfirm = isPay && document.querySelector(".screen.is-pay-card");
+
+        if (isAssistSend) {
+          sayUserAction("发送给微信好友", "好的，代付请求已准备好，您可以发送给微信好友帮您完成付款。");
+          return;
+        }
+
+        if (isPayConfirm) {
+          enterOrderDetail();
+          return;
+        }
+
+        setOrderSubView(isPay ? "pay" : "assist");
+        document.querySelectorAll(isPay ? ".order-btn.pay" : ".order-action-row .order-btn:not(.cancel):not(.pay)").forEach((node) => {
+          node.textContent = isPay ? "确认支付" : "发送给微信好友";
+        });
+        sayUserAction(
+          isPay ? "我选择立即支付" : "我想找人付",
+          isPay ? "好的，已进入支付页面，默认选择微信支付，确认后即可完成交易。" : "好的，已为您生成代付卡片，可以发送给微信好友帮您付款，也可以切换为自己付款。"
+        );
+      });
+    });
+
+    document.querySelectorAll(".detail-home-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        resetToHome();
+      });
+    });
+
+    document.querySelectorAll(".hangup-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+        document.querySelectorAll(".hangup-btn").forEach((node) => {
+          node.textContent = "已挂断";
+        });
+      });
+    });
+
+    renderGroup();
+    bindHeroScrollSync();
+    enterWaimaiHome();
+    window.enterWaimaiHome = enterWaimaiHome;
+    window.enterSeniorHome = enterSeniorHome;
+  </script>
+</body>
+</html>
